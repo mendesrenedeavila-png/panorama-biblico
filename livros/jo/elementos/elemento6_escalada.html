@@ -145,6 +145,8 @@
         .data-point {
             cursor: pointer;
             transition: all 0.2s;
+            transform-origin: center;
+            transform-box: fill-box;
         }
 
         .data-point:hover {
@@ -176,7 +178,8 @@
 
         /* Tooltip */
         .tooltip {
-            position: fixed;
+            position: absolute;
+            /* Changed from fixed to absolute */
             background: var(--bg-card);
             border: 1px solid var(--border-subtle);
             border-radius: 12px;
@@ -187,6 +190,9 @@
             pointer-events: none;
             opacity: 0;
             transition: opacity 0.2s;
+            /* Removed top/left transitions */
+            transform: translateX(-50%);
+            /* Center horizontally */
         }
 
         .tooltip.visible {
@@ -514,8 +520,14 @@
             <a href="${getBibleLink(firstCh)}" target="_blank">Ler Jó ${d.chapter}</a>
           </div>
         `;
-                tooltip.style.left = (e.clientX + 15) + 'px';
-                tooltip.style.top = (e.clientY - 50) + 'px';
+
+                // Position relative to element + scroll
+                const rect = point.getBoundingClientRect();
+                const tooltipHeight = tooltip.offsetHeight || 100; // estimated if not rendered yet
+
+                // Add window.scrollX/Y because position is absolute relative to document
+                tooltip.style.left = (rect.left + rect.width / 2 + window.scrollX) + 'px';
+                tooltip.style.top = (rect.top - tooltipHeight - 15 + window.scrollY) + 'px'; // 15px gap
                 tooltip.classList.add('visible');
             });
 

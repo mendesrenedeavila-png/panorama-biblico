@@ -565,9 +565,13 @@
             const item = document.createElement('div');
             item.className = 'discurso-item';
             item.dataset.index = index;
+
+            // Extract first chapter for link
+            const firstCh = disc.ref.match(/\d+/)[0];
+
             item.innerHTML = `
         <div class="discurso-speaker">${disc.speaker}</div>
-        <div class="discurso-ref">${disc.ref}</div>
+        <div class="discurso-ref"><a href="${getBibleLink(firstCh)}" target="_blank" onclick="event.stopPropagation()" style="color: inherit; text-decoration: none; border-bottom: 1px dashed var(--text-muted);">${disc.ref}</a></div>
       `;
             item.addEventListener('click', () => selectDiscurso(index));
             discursosList.appendChild(item);
@@ -592,9 +596,17 @@
             document.getElementById('selected-summary').textContent = disc.summary;
 
             const firstCap = disc.caps.split('-')[0];
+
+            // Regex to linkify source references like "Jó 4:7-11"
+            const linkedFonte = disc.fonte.replace(/Jó (\d+)(?::(\d+)(?:-(\d+))?)?/g, (match, ch, v1, v2) => {
+                let url = getBibleLink(ch);
+                if (v1) url += `/${v1}`;
+                return `<a href="${url}" target="_blank">${match}</a>`;
+            });
+
             document.getElementById('verse-quote').innerHTML = `
         "${disc.verse}"
-        <span class="verse-ref"><a href="${getBibleLink(firstCap)}" target="_blank">${disc.verseRef}</a> · ${disc.fonte}</span>
+        <span class="verse-ref"><a href="${getBibleLink(firstCap)}" target="_blank">${disc.verseRef}</a> · ${linkedFonte}</span>
       `;
         }
 
