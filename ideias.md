@@ -1,6 +1,5 @@
 # Ideias de elementos interativos para aula 1 – Panorama de Jó (NAA)
 
-
 ## 1. Mapa geral interativo da estrutura do livro
 
 A ideia é apresentar a macroestrutura do livro de Jó de forma visual: prólogo narrativo, ciclos de diálogos, discursos de Eliú, discursos de Deus e epílogo. Cada bloco pode ser clicável, revelando um pequeno resumo, objetivo teológico e capítulos correspondentes. Isso ajuda os alunos a perceberem que o livro não é um amontoado de falas soltas, mas uma construção literária muito bem organizada.
