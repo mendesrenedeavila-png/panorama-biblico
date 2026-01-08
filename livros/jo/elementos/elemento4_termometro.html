@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Termômetro Teológico – Panorama de Jó</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@600;700&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0a0e17;
+            --bg-secondary: #111827;
+            --bg-card: #1a1f2e;
+            --accent-gold: #d4a853;
+            --accent-blue: #60a5fa;
+            --accent-purple: #a78bfa;
+            --accent-emerald: #34d399;
+            --accent-rose: #fb7185;
+            --accent-orange: #fb923c;
+            --accent-cyan: #22d3ee;
+            --text-primary: #f9fafb;
+            --text-secondary: #9ca3af;
+            --text-muted: #6b7280;
+            --border-subtle: rgba(255, 255, 255, 0.08);
+            --transition-smooth: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+
+        .bg-pattern {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: radial-gradient(circle at 20% 30%, rgba(251, 113, 133, 0.08) 0%, transparent 50%),
+                radial-gradient(circle at 80% 70%, rgba(52, 211, 153, 0.06) 0%, transparent 50%);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(251, 113, 133, 0.15);
+            color: var(--accent-rose);
+            padding: 8px 16px;
+            border-radius: 100px;
+            font-size: 12px;
+            font-weight: 500;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            margin-bottom: 16px;
+            border: 1px solid rgba(251, 113, 133, 0.2);
+        }
+
+        h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(1.8rem, 4vw, 2.8rem);
+            font-weight: 700;
+            margin-bottom: 12px;
+            background: linear-gradient(135deg, var(--text-primary), var(--accent-rose));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            font-size: 1rem;
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .main-layout {
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            gap: 30px;
+            margin-top: 30px;
+        }
+
+        @media (max-width: 900px) {
+            .main-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Discursos sidebar */
+        .discursos-panel {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 20px;
+            border: 1px solid var(--border-subtle);
+            max-height: 70vh;
+            overflow-y: auto;
+        }
+
+        .panel-title {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--text-muted);
+            margin-bottom: 16px;
+        }
+
+        .discurso-item {
+            padding: 12px;
+            margin-bottom: 8px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.03);
+            cursor: pointer;
+            transition: var(--transition-smooth);
+            border-left: 3px solid transparent;
+        }
+
+        .discurso-item:hover {
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .discurso-item.active {
+            background: rgba(251, 113, 133, 0.15);
+            border-left-color: var(--accent-rose);
+        }
+
+        .discurso-speaker {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .discurso-ref {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+        }
+
+        /* Main content area */
+        .main-content {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        /* Termômetros - HORIZONTAL LAYOUT */
+        .termometros-row {
+            display: flex;
+            gap: 15px;
+            justify-content: space-between;
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 24px;
+            border: 1px solid var(--border-subtle);
+        }
+
+        .termometro-item {
+            flex: 1;
+            text-align: center;
+            min-width: 0;
+        }
+
+        .termo-header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .termo-icon {
+            font-size: 1.5rem;
+        }
+
+        .termo-label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .termo-bar-container {
+            height: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .termo-bar {
+            height: 100%;
+            border-radius: 10px;
+            transition: width 0.6s ease-out;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding-right: 8px;
+        }
+
+        .termo-value {
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: var(--bg-primary);
+            min-width: 30px;
+            text-align: right;
+        }
+
+        .termo-source {
+            font-size: 0.6rem;
+            color: var(--text-muted);
+            margin-top: 6px;
+        }
+
+        /* Methodology legend */
+        .methodology-card {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 20px;
+            border: 1px solid var(--border-subtle);
+        }
+
+        .method-title {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--text-muted);
+            margin-bottom: 12px;
+        }
+
+        .method-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+        }
+
+        .method-item {
+            display: flex;
+            gap: 12px;
+            align-items: flex-start;
+            padding: 12px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+        }
+
+        .method-icon {
+            font-size: 1.2rem;
+            flex-shrink: 0;
+        }
+
+        .method-info {
+            flex: 1;
+        }
+
+        .method-name {
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .method-desc {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            line-height: 1.4;
+        }
+
+        /* Selected discourse info */
+        .selected-info {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 24px;
+            border: 1px solid var(--border-subtle);
+            display: none;
+        }
+
+        .selected-info.visible {
+            display: block;
+        }
+
+        .selected-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .selected-summary {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        .verse-quote {
+            margin-top: 16px;
+            padding: 16px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            border-left: 3px solid var(--accent-rose);
+            font-style: italic;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .verse-ref {
+            font-style: normal;
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            margin-top: 8px;
+            display: block;
+        }
+
+        .verse-ref a {
+            color: var(--accent-rose);
+            text-decoration: none;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 50px;
+            padding-top: 30px;
+            border-top: 1px solid var(--border-subtle);
+        }
+
+        footer p {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--accent-rose);
+            text-decoration: none;
+            font-size: 0.9rem;
+            margin-top: 16px;
+            padding: 12px 24px;
+            background: rgba(251, 113, 133, 0.1);
+            border-radius: 100px;
+            border: 1px solid rgba(251, 113, 133, 0.2);
+            transition: var(--transition-smooth);
+        }
+
+        .back-link:hover {
+            background: rgba(251, 113, 133, 0.2);
+        }
+
+        @media (max-width: 700px) {
+            .termometros-row {
+                flex-direction: column;
+            }
+
+            .termometro-item {
+                margin-bottom: 20px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="bg-pattern"></div>
+    <div class="container">
+        <header>
+            <div class="badge">🌡️ Elemento 4 · Panorama de Jó</div>
+            <h1>Termômetro Teológico</h1>
+            <p class="subtitle">Veja como cada tema teológico varia conforme quem está falando no livro de Jó.</p>
+        </header>
+
+        <div class="main-layout">
+            <div class="discursos-panel">
+                <div class="panel-title">Selecione um Discurso</div>
+                <div id="discursos-list"></div>
+            </div>
+
+            <div class="main-content">
+                <div class="termometros-row" id="termometros"></div>
+
+                <div class="methodology-card">
+                    <div class="method-title">📊 Metodologia de Cálculo</div>
+                    <div class="method-grid">
+                        <div class="method-item">
+                            <div class="method-icon">⚖️</div>
+                            <div class="method-info">
+                                <div class="method-name">Retribuição</div>
+                                <div class="method-desc">Presença de argumentos que associam sofrimento a pecado (ex:
+                                    "os ímpios perecem").</div>
+                            </div>
+                        </div>
+                        <div class="method-item">
+                            <div class="method-icon">👑</div>
+                            <div class="method-info">
+                                <div class="method-name">Justiça de Deus</div>
+                                <div class="method-desc">Afirmações sobre Deus ser justo, não perverter o direito, ou
+                                    questionar sua justiça.</div>
+                            </div>
+                        </div>
+                        <div class="method-item">
+                            <div class="method-icon">❓</div>
+                            <div class="method-info">
+                                <div class="method-name">Mistério do Sofrimento</div>
+                                <div class="method-desc">Perguntas "por quê?", expressões de incompreensão, ausência de
+                                    explicação.</div>
+                            </div>
+                        </div>
+                        <div class="method-item">
+                            <div class="method-icon">💎</div>
+                            <div class="method-info">
+                                <div class="method-name">Sabedoria Divina</div>
+                                <div class="method-desc">Referências à sabedoria oculta, conhecimento que ultrapassa o
+                                    humano.</div>
+                            </div>
+                        </div>
+                        <div class="method-item">
+                            <div class="method-icon">🛡️</div>
+                            <div class="method-info">
+                                <div class="method-name">Integridade de Jó</div>
+                                <div class="method-desc">Defesas da inocência de Jó, suas declarações de retidão e
+                                    testemunho.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="selected-info" id="selected-info">
+                    <div class="selected-title" id="selected-title"></div>
+                    <div class="selected-summary" id="selected-summary"></div>
+                    <div class="verse-quote" id="verse-quote"></div>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <p>Valores calculados a partir de análise temática do texto da NAA</p>
+            <a href="../index.html" class="back-link">← Voltar ao Panorama</a>
+            <a href="https://deepmind.google/" target="_blank"
+                style="display: inline-flex; align-items: center; gap: 8px; color: rgba(255,255,255,0.5); text-decoration: none; font-size: 0.75rem; margin-top: 12px;">
+                <span
+                    style="width: 18px; height: 18px; border-radius: 4px; background: linear-gradient(135deg, #4285f4, #34a853, #fbbc05, #ea4335);"></span>
+                Criado com ♥ usando Google Antigravity
+            </a>
+    </div>
+    </footer>
+    </div>
+
+    <script>
+        const getBibleLink = (ch) => `https://www.bibliaonline.com.br/naa/j%C3%B3/${ch}`;
+
+        // Temas teológicos
+        const temas = [
+            { id: 'retribuicao', label: 'Retribuição', icon: '⚖️', color: '#fb923c' },
+            { id: 'justica', label: 'Justiça', icon: '👑', color: '#34d399' },
+            { id: 'misterio', label: 'Mistério', icon: '❓', color: '#a78bfa' },
+            { id: 'sabedoria', label: 'Sabedoria', icon: '💎', color: '#60a5fa' },
+            { id: 'integridade', label: 'Integridade', icon: '🛡️', color: '#22d3ee' }
+        ];
+
+        // Discursos com fonte indicada
+        const discursos = [
+            {
+                speaker: 'Elifaz', ref: 'Jó 4-5', caps: '4-5', title: '1º Discurso de Elifaz',
+                summary: 'Elifaz apela à teologia tradicional: nenhum inocente perece, só os ímpios sofrem.',
+                verse: 'Pense bem: que inocente já pereceu?', verseRef: 'Jó 4:7',
+                fonte: 'Análise de Jó 4:7-11 e 5:17-27',
+                valores: { retribuicao: 95, justica: 70, misterio: 10, sabedoria: 40, integridade: 20 }
+            },
+            {
+                speaker: 'Jó', ref: 'Jó 6-7', caps: '6-7', title: 'Resposta de Jó a Elifaz',
+                summary: 'Jó defende sua angústia e questiona por que Deus o trata como inimigo.',
+                verse: 'Por que me puseste por alvo?', verseRef: 'Jó 7:20',
+                fonte: 'Análise de Jó 6:1-13 e 7:11-21',
+                valores: { retribuicao: 15, justica: 40, misterio: 85, sabedoria: 20, integridade: 90 }
+            },
+            {
+                speaker: 'Bildade', ref: 'Jó 8', caps: '8', title: '1º Discurso de Bildade',
+                summary: 'Bildade defende a justiça divina: Deus não perverte o juízo.',
+                verse: 'Acaso Deus perverte o direito?', verseRef: 'Jó 8:3',
+                fonte: 'Análise de Jó 8:1-7 e 8:20-22',
+                valores: { retribuicao: 90, justica: 80, misterio: 5, sabedoria: 30, integridade: 15 }
+            },
+            {
+                speaker: 'Jó', ref: 'Jó 9-10', caps: '9-10', title: 'Resposta de Jó a Bildade',
+                summary: 'Jó reconhece a grandeza de Deus mas questiona como contestar Deus em juízo.',
+                verse: 'Como pode o mortal ser justo diante de Deus?', verseRef: 'Jó 9:2',
+                fonte: 'Análise de Jó 9:1-20 e 10:1-7',
+                valores: { retribuicao: 20, justica: 60, misterio: 80, sabedoria: 50, integridade: 85 }
+            },
+            {
+                speaker: 'Zofar', ref: 'Jó 11', caps: '11', title: '1º Discurso de Zofar',
+                summary: 'Zofar é o mais severo: Jó merece pior do que recebe por seus pecados.',
+                verse: 'Saiba que Deus exige de ti menos do que merece a tua iniquidade.', verseRef: 'Jó 11:6',
+                fonte: 'Análise de Jó 11:1-6 e 11:13-20',
+                valores: { retribuicao: 100, justica: 65, misterio: 5, sabedoria: 45, integridade: 5 }
+            },
+            {
+                speaker: 'Jó', ref: 'Jó 12-14', caps: '12-14', title: 'Resposta de Jó a Zofar',
+                summary: 'Jó ironiza a sabedoria dos amigos e clama diretamente a Deus.',
+                verse: 'Ainda que ele me mate, nele esperarei.', verseRef: 'Jó 13:15',
+                fonte: 'Análise de Jó 12:1-6, 13:13-19 e 14:1-6',
+                valores: { retribuicao: 10, justica: 50, misterio: 75, sabedoria: 60, integridade: 95 }
+            },
+            {
+                speaker: 'Eliú', ref: 'Jó 32-37', caps: '32-37', title: 'Discursos de Eliú',
+                summary: 'Eliú propõe que o sofrimento é disciplina divina para purificação.',
+                verse: 'Deus fala de um modo e de outro, mas ninguém atenta para isso.', verseRef: 'Jó 33:14',
+                fonte: 'Análise de Jó 33:14-30 e 36:8-12',
+                valores: { retribuicao: 60, justica: 75, misterio: 40, sabedoria: 80, integridade: 50 }
+            },
+            {
+                speaker: 'Deus', ref: 'Jó 38-41', caps: '38-41', title: 'Discursos de Deus',
+                summary: 'Deus responde do redemoinho, revelando Sua sabedoria através da criação.',
+                verse: 'Onde você estava quando lancei os fundamentos da terra?', verseRef: 'Jó 38:4',
+                fonte: 'Análise de Jó 38:1-41, 40:1-14 e 41:1-34',
+                valores: { retribuicao: 5, justica: 30, misterio: 70, sabedoria: 100, integridade: 60 }
+            },
+            {
+                speaker: 'Jó', ref: 'Jó 42:1-6', caps: '42', title: 'Confissão Final de Jó',
+                summary: 'Jó se arrepende e reconhece sua pequenez diante de Deus.',
+                verse: 'Eu te conhecia só de ouvir, mas agora meus olhos te veem.', verseRef: 'Jó 42:5',
+                fonte: 'Análise de Jó 42:1-6',
+                valores: { retribuicao: 5, justica: 40, misterio: 50, sabedoria: 90, integridade: 70 }
+            }
+        ];
+
+        // Render termômetros horizontais
+        const termometrosContainer = document.getElementById('termometros');
+        temas.forEach(tema => {
+            const item = document.createElement('div');
+            item.className = 'termometro-item';
+            item.innerHTML = `
+        <div class="termo-header">
+          <div class="termo-icon">${tema.icon}</div>
+          <div class="termo-label">${tema.label}</div>
+        </div>
+        <div class="termo-bar-container">
+          <div class="termo-bar" id="bar-${tema.id}" style="width: 0%; background: ${tema.color};">
+            <span class="termo-value" id="val-${tema.id}">0%</span>
+          </div>
+        </div>
+        <div class="termo-source" id="src-${tema.id}"></div>
+      `;
+            termometrosContainer.appendChild(item);
+        });
+
+        // Render discursos list
+        const discursosList = document.getElementById('discursos-list');
+        discursos.forEach((disc, index) => {
+            const item = document.createElement('div');
+            item.className = 'discurso-item';
+            item.dataset.index = index;
+            item.innerHTML = `
+        <div class="discurso-speaker">${disc.speaker}</div>
+        <div class="discurso-ref">${disc.ref}</div>
+      `;
+            item.addEventListener('click', () => selectDiscurso(index));
+            discursosList.appendChild(item);
+        });
+
+        function selectDiscurso(index) {
+            const disc = discursos[index];
+
+            document.querySelectorAll('.discurso-item').forEach((el, i) => {
+                el.classList.toggle('active', i === index);
+            });
+
+            temas.forEach(tema => {
+                const value = disc.valores[tema.id];
+                document.getElementById(`bar-${tema.id}`).style.width = value + '%';
+                document.getElementById(`val-${tema.id}`).textContent = value + '%';
+            });
+
+            const info = document.getElementById('selected-info');
+            info.classList.add('visible');
+            document.getElementById('selected-title').textContent = disc.title;
+            document.getElementById('selected-summary').textContent = disc.summary;
+
+            const firstCap = disc.caps.split('-')[0];
+            document.getElementById('verse-quote').innerHTML = `
+        "${disc.verse}"
+        <span class="verse-ref"><a href="${getBibleLink(firstCap)}" target="_blank">${disc.verseRef}</a> · ${disc.fonte}</span>
+      `;
+        }
+
+        selectDiscurso(0);
+    </script>
+</body>
+
+</html>

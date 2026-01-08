@@ -1,0 +1,1447 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Timelines Interativas – Livro de Jó</title>
+
+    <style>
+        :root {
+            --bg: #0b0f19;
+            --panel: #111827;
+            --line: #374151;
+            --accent: #fbbf24;
+            --text: #f3f4f6;
+            --muted: #9ca3af;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: system-ui, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            padding-bottom: 60px;
+            font-size: 1em;
+            transition: font-size 0.2s ease;
+        }
+
+        header {
+            text-align: center;
+            padding: 24px 16px;
+            background: linear-gradient(to bottom, rgba(0, 0, 0, 0.4), transparent);
+        }
+
+        header h1 {
+            font-size: 22px;
+            margin-bottom: 6px;
+        }
+
+        header p {
+            font-size: 13px;
+            color: var(--muted);
+        }
+
+        main {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 16px;
+        }
+
+        .panel {
+            background: var(--panel);
+            padding: 20px;
+            border-radius: 14px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            margin-bottom: 24px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+        }
+
+        .panel h2 {
+            font-size: 18px;
+            margin-bottom: 6px;
+        }
+
+        .panel p {
+            font-size: 13px;
+            color: var(--muted);
+            margin-bottom: 12px;
+        }
+
+        .menu-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 12px;
+        }
+
+        .menu-btn {
+            padding: 14px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            cursor: pointer;
+            text-align: left;
+            transition: 0.2s;
+        }
+
+        .menu-btn:hover {
+            background: rgba(255, 255, 255, 0.12);
+            border-color: var(--accent);
+        }
+
+        .menu-btn-title {
+            font-size: 15px;
+            margin-bottom: 4px;
+        }
+
+        .menu-btn-desc {
+            font-size: 12px;
+            color: var(--muted);
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        /* CONTROLES DE FONTE */
+        .font-controls {
+            margin: 10px 0 20px 0;
+            display: flex;
+            gap: 10px;
+        }
+
+        .font-controls button {
+            padding: 6px 12px;
+            border-radius: 6px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text);
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .font-controls button:hover {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: var(--accent);
+        }
+
+        /* TIMELINE VERTICAL ALTERNADA */
+
+        .timeline {
+            position: relative;
+            margin-top: 20px;
+        }
+
+        .timeline::before {
+            content: "";
+            position: absolute;
+            left: 50%;
+            top: 0;
+            width: 3px;
+            height: 100%;
+            background: var(--line);
+            transform: translateX(-50%);
+        }
+
+        .event {
+            width: 50%;
+            padding: 16px 20px;
+            position: relative;
+            margin-bottom: 40px;
+        }
+
+        .event:nth-child(odd) {
+            left: 0;
+            text-align: right;
+        }
+
+        .event:nth-child(even) {
+            left: 50%;
+        }
+
+        .event::before {
+            content: "";
+            position: absolute;
+            top: 20px;
+            width: 16px;
+            height: 16px;
+            background: var(--accent);
+            border-radius: 50%;
+            border: 3px solid var(--panel);
+            z-index: 2;
+        }
+
+        .event:nth-child(odd)::before {
+            right: -8px;
+        }
+
+        .event:nth-child(even)::before {
+            left: -8px;
+        }
+
+        .event-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 14px;
+            border-radius: 12px;
+            transition: 0.2s;
+            cursor: pointer;
+        }
+
+        .event-card:hover {
+            background: rgba(255, 255, 255, 0.12);
+            border-color: var(--accent);
+        }
+
+        .event-card.expanded {
+            background: rgba(255, 255, 255, 0.18);
+        }
+
+        .event-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 6px;
+        }
+
+        .avatar {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.08);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .avatar svg {
+            width: 22px;
+            height: 22px;
+            stroke: var(--accent);
+            fill: none;
+            stroke-width: 1.6;
+        }
+
+        .avatar-deus {
+            background: var(--accent);
+            color: #000;
+            font-weight: bold;
+            font-size: 11px;
+            padding: 0 6px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Avatar images for characters */
+        .avatar-img {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            background-size: cover;
+            background-position: center;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .avatar-jo {
+            background-image: url('../imagens/JO.png');
+        }
+
+        .avatar-bildade {
+            background-image: url('../imagens/BILDADE.png');
+        }
+
+        .avatar-elifaz {
+            background-image: url('../imagens/ELIFAZ.png');
+        }
+
+        .avatar-zofar {
+            background-image: url('../imagens/ZOFAR.png');
+        }
+
+        .avatar-deus-img {
+            background-image: url('../imagens/DEUS.png');
+        }
+
+        .avatar-eliu {
+            background-image: url('../imagens/ELIU.png');
+        }
+
+        .avatar-satanas {
+            background-image: url('../imagens/SATANAS.png');
+        }
+
+        .speaker {
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .ref {
+            font-size: 11px;
+            color: var(--muted);
+        }
+
+        .ref a {
+            color: var(--accent);
+            text-decoration: none;
+        }
+
+        .ref a:hover {
+            text-decoration: underline;
+        }
+
+        .event-title {
+            font-size: 14px;
+            margin-bottom: 4px;
+        }
+
+        .event-summary {
+            font-size: 12px;
+            color: var(--muted);
+        }
+
+        .event-detail {
+            display: none;
+            margin-top: 8px;
+            font-size: 12px;
+            color: var(--text);
+        }
+
+        .event-card.expanded .event-detail {
+            display: block;
+        }
+
+        .back-btn {
+            margin-top: 20px;
+            padding: 10px 16px;
+            border-radius: 8px;
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: var(--muted);
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .back-btn:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        @media (max-width: 700px) {
+            .event {
+                width: 100%;
+                left: 0 !important;
+                text-align: left !important;
+            }
+
+            .event::before {
+                left: -8px !important;
+                right: auto !important;
+            }
+
+            .timeline::before {
+                left: 0;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <h1>Timelines Interativas – Livro de Jó</h1>
+        <p>Timelines verticais alternadas, com links para capítulos e controle de fonte.</p>
+    </header>
+
+    <main>
+
+        <!-- MENU -->
+        <section id="menu" class="panel">
+            <h2>Escolha uma timeline</h2>
+            <p>Cada visão apresenta o livro de Jó de um jeito diferente.</p>
+
+            <div class="font-controls">
+                <button onclick="changeFontSize(1)">A+</button>
+                <button onclick="changeFontSize(-1)">A-</button>
+            </div>
+
+            <div class="menu-grid">
+                <button class="menu-btn" onclick="openTimeline('completa')">
+                    <div class="menu-btn-title">Timeline Completa</div>
+                    <div class="menu-btn-desc">Todos os discursos, ciclo por ciclo.</div>
+                </button>
+
+                <button class="menu-btn" onclick="openTimeline('simplificada')">
+                    <div class="menu-btn-title">Timeline Simplificada</div>
+                    <div class="menu-btn-desc">Resumo por personagem.</div>
+                </button>
+
+                <button class="menu-btn" onclick="openTimeline('tematica')">
+                    <div class="menu-btn-title">Timeline Temática</div>
+                    <div class="menu-btn-desc">Acusações, respostas, intervenção e revelação.</div>
+                </button>
+            </div>
+        </section>
+        <!-- TIMELINE COMPLETA -->
+        <section id="timeline-completa" class="panel hidden">
+            <h2>Timeline Completa – Ciclos de discursos</h2>
+            <p>Clique nos cartões para expandir o resumo.</p>
+
+            <div class="font-controls">
+                <button onclick="changeFontSize(1)">A+</button>
+                <button onclick="changeFontSize(-1)">A-</button>
+            </div>
+
+            <div class="timeline">
+
+                <!-- PRÓLOGO -->
+                <div class="event">
+                    <div class="event-card">
+                        <div class="event-header">
+                            <div class="avatar">
+                                <svg viewBox="0 0 24 24">
+                                    <circle cx="12" cy="7" r="3.5"></circle>
+                                    <path d="M6 18h12c-1.2-3-3-4.5-6-4.5S7.2 15 6 18z"></path>
+                                </svg>
+                            </div>
+                            <div>
+                                <div class="speaker">Narrador</div>
+                                <div class="ref">
+                                    <a href="https://www.bibliaonline.com.br/NAA/jó/1" target="_blank">Jó 1</a> –
+                                    <a href="https://www.bibliaonline.com.br/NAA/jó/2" target="_blank">2</a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="event-title">Prólogo: Jó e as provações</div>
+                        <div class="event-summary">Jó é apresentado como íntegro, mas perde bens, filhos e saúde.</div>
+                        <div class="event-detail">A narrativa revela o cenário espiritual em que Satanás questiona a
+                            integridade de Jó diante de Deus.</div>
+                    </div>
+                </div>
+
+                <!-- MALDIÇÃO DO DIA (JÓ 3) -->
+                <div class="event">
+                    <div class="event-card">
+                        <div class="event-header">
+                            <div class="avatar">
+                                <svg viewBox="0 0 24 24">
+                                    <circle cx="12" cy="7" r="3.5"></circle>
+                                    <path d="M6 18h12c-1.2-3-3-4.5-6-4.5S7.2 15 6 18z"></path>
+                                </svg>
+                            </div>
+                            <div>
+                                <div class="speaker">Jó</div>
+                                <div class="ref">
+                                    <a href="https://www.bibliaonline.com.br/NAA/jó/3" target="_blank">Jó 3</a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="event-title">Jó amaldiçoa o dia do seu nascimento</div>
+                        <div class="event-summary">Jó deseja nunca ter nascido, tamanha a sua dor.</div>
+                        <div class="event-detail">Ele não amaldiçoa Deus, mas questiona por que nasceu para sofrer
+                            tanto.</div>
+                    </div>
+                </div>
+
+                <!-- CICLO 1 -->
+                <!-- ELIFAZ 1 -->
+                <div class="event">
+                    <div class="event-card">
+                        <div class="event-header">
+                            <div class="avatar">
+                                <svg viewBox="0 0 24 24">
+                                    <circle cx="12" cy="7" r="3.5"></circle>
+                                    <path d="M6 18h12c-1.2-3-3-4.5-6-4.5S7.2 15 6 18z"></path>
+                                </svg>
+                            </div>
+                            <div>
+                                <div class="speaker">Elifaz</div>
+                                <div class="ref">
+                                    <a href="https://www.bibliaonline.com.br/NAA/jó/4" target="_blank">Jó 4</a> –
+                                    <a href="https://www.bibliaonline.com.br/NAA/jó/5" target="_blank">5</a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="event-title">Primeiro discurso de Elifaz</div>
+                        <div class="event-summary">Sugere que o sofrimento de Jó revela algum erro oculto.</div>
+                        <div class="event-detail">Elifaz confia em sua experiência e afirma que Deus disciplina o
+                            culpado.</div>
+                    </div>
+                </div>
+
+                <!-- JÓ RESPONDE 1 -->
+                <div class="event">
+                    <div class="event-card">
+                        <div class="event-header">
+                            <div class="avatar">
+                                <svg viewBox="0 0 24 24">
+                                    <circle cx="12" cy="7" r="3.5"></circle>
+                                    <path d="M6 18h12c-1.2-3-3-4.5-6-4.5S7.2 15 6 18z"></path>
+                                </svg>
+                            </div>
+                            <div>
+                                <div class="speaker">Jó</div>
+                                <div class="ref">
+                                    <a href="https://www.bibliaonline.com.br/NAA/jó/6" target="_blank">Jó 6</a> –
+                                    <a href="https://www.bibliaonline.com.br/NAA/jó/7" target="_blank">7</a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="event-title">Primeira resposta de Jó</div>
+                        <div class="event-summary">Expressa dor intensa e questiona o sentido de sua aflição.</div>
+                        <div class="event-detail">Jó sente que sua dor é maior do que pode suportar e não encontra
+                            explicação justa.</div>
+                    </div>
+                </div>
+
+                <!-- BILDADE 1 -->
+                <div class="event">
+                    <div class="event-card">
+                        <div class="event-header">
+                            <div class="avatar">
+                                <svg viewBox="0 0 24 24">
+                                    <circle cx="12" cy="7" r="3.5"></circle>
+                                    <path d="M6 18h12c-1.2-3-3-4.5-6-4.5S7.2 15 6 18z"></path>
+                                </svg>
+                            </div>
+                            <div>
+                                <div class="speaker">Bildade</div>
+                                <div class="ref">
+                                    <a href="https://www.bibliaonline.com.br/NAA/jó/8" target="_blank">Jó 8</a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="event-title">Primeiro discurso de Bildade</div>
+                        <div class="event-summary">Afirma que Deus não perverte a justiça e que Jó deve ter falhado.
+                        </div>
+                        <div class="event-detail">Bildade insiste que, se Jó fosse justo, Deus já teria restaurado sua
+                            situação.</div>
+                    </div>
+                </div>
+
+                <!-- JÓ RESPONDE 2 -->
+                <div class="event">
+                    <div class="event-card">
+                        <div class="event-header">
+                            <div class="avatar">
+                                <svg viewBox="0 0 24 24">
+                                    <circle cx="12" cy="7" r="3.5"></circle>
+                                    <path d="M6 18h12c-1.2-3-3-4.5-6-4.5S7.2 15 6 18z"></path>
+                                </svg>
+                            </div>
+                            <div>
+                                <div class="speaker">Jó</div>
+                                <div class="ref">
+                                    <a href="https://www.bibliaonline.com.br/NAA/jó/9" target="_blank">Jó 9</a> –
+                                    <a href="https://www.bibliaonline.com.br/NAA/jó/10" target="_blank">10</a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="event-title">Segunda resposta de Jó</div>
+                        <div class="event-summary">Reconhece a grandeza de Deus, mas sente-se incapaz de se defender
+                            diante dele.</div>
+                        <div class="event-detail">Jó deseja um mediador entre ele e Deus, alguém que torne a situação
+                            compreensível e justa.</div>
+                    </div>
+                </div>
+
+                <!-- ZOFAR 1 -->
+                <div class="event">
+                    <div class="event-card">
+                        <div class="event-header">
+                            <div class="avatar">
+                                <svg viewBox="0 0 24 24">
+                                    <circle cx="12" cy="7" r="3.5"></circle>
+                                    <path d="M6 18h12c-1.2-3-3-4.5-6-4.5S7.2 15 6 18z"></path>
+                                </svg>
+                            </div>
+                            <div>
+                                <div class="speaker">Zofar</div>
+                                <div class="ref">
+                                    <a href="https://www.bibliaonline.com.br/NAA/jó/11" target="_blank">Jó 11</a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="event-title">Primeiro discurso de Zofar</div>
+                        <div class="event-summary">Acusa Jó de esconder pecados e pede arrependimento sincero.</div>
+                        <div class="event-detail">Zofar afirma que Jó recebe menos castigo do que merece.</div>
+                    </div>
+                </div>
+
+                <!-- JÓ RESPONDE 3 -->
+                <div class="event">
+                    <div class="event-card">
+                        <div class="event-header">
+                            <div class="avatar">
+                                <svg viewBox="0 0 24 24">
+                                    <circle cx="12" cy="7" r="3.5"></circle>
+                                    <path d="M6 18h12c-1.2-3-3-4.5-6-4.5S7.2 15 6 18z"></path>
+                                </svg>
+                            </div>
+                            <div>
+                                <div class="speaker">Jó</div>
+                                <div class="ref">
+                                    <a href="https://www.bibliaonline.com.br/NAA/jó/12" target="_blank">Jó 12</a> –
+                                    <a href="https://www.bibliaonline.com.br/NAA/jó/14" target="_blank">14</a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="event-title">Terceira resposta de Jó</div>
+                        <div class="event-summary">Defende sua integridade e reflete sobre a fragilidade humana.</div>
+                        <div class="event-detail">Jó confronta a visão simplista dos amigos e insiste que o justo também
+                            pode sofrer.</div>
+                    </div>
+                </div>
+
+            </div> <!-- fim timeline parte 2.1 -->
+            <!-- CICLO 2 -->
+            <!-- ELIFAZ 2 -->
+            <div class="event">
+                <div class="event-card">
+                    <div class="event-header">
+                        <div class="avatar">
+                            <svg viewBox="0 0 24 24">
+                                <circle cx="12" cy="7" r="3.5"></circle>
+                                <path d="M6 18h12c-1.2-3-3-4.5-6-4.5S7.2 15 6 18z"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <div class="speaker">Elifaz</div>
+                            <div class="ref">
+                                <a href="https://www.bibliaonline.com.br/NAA/jó/15" target="_blank">Jó 15</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="event-title">Segundo discurso de Elifaz</div>
+                    <div class="event-summary">Reforça que o ímpio sempre sofre e sugere que Jó está nesse grupo.</div>
+                    <div class="event-detail">Elifaz descreve o destino dos maus e projeta isso sobre a situação de Jó.
+                    </div>
+                </div>
+            </div>
+
+            <!-- JÓ RESPONDE 4 -->
+            <div class="event">
+                <div class="event-card">
+                    <div class="event-header">
+                        <div class="avatar">
+                            <svg viewBox="0 0 24 24">
+                                <circle cx="12" cy="7" r="3.5"></circle>
+                                <path d="M6 18h12c-1.2-3-3-4.5-6-4.5S7.2 15 6 18z"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <div class="speaker">Jó</div>
+                            <div class="ref">
+                                <a href="https://www.bibliaonline.com.br/NAA/jó/16" target="_blank">Jó 16</a> –
+                                <a href="https://www.bibliaonline.com.br/NAA/jó/17" target="_blank">17</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="event-title">Resposta de Jó a Elifaz</div>
+                    <div class="event-summary">Sente-se atacado pelos amigos e clama por um testemunho no céu.</div>
+                    <div class="event-detail">Jó descreve Deus como sua testemunha, mesmo estando confuso com o
+                        sofrimento.</div>
+                </div>
+            </div>
+
+            <!-- BILDADE 2 -->
+            <div class="event">
+                <div class="event-card">
+                    <div class="event-header">
+                        <div class="avatar">
+                            <svg viewBox="0 0 24 24">
+                                <circle cx="12" cy="7" r="3.5"></circle>
+                                <path d="M6 18h12c-1.2-3-3-4.5-6-4.5S7.2 15 6 18z"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <div class="speaker">Bildade</div>
+                            <div class="ref">
+                                <a href="https://www.bibliaonline.com.br/NAA/jó/18" target="_blank">Jó 18</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="event-title">Segundo discurso de Bildade</div>
+                    <div class="event-summary">Descreve o destino terrível dos ímpios.</div>
+                    <div class="event-detail">Suas palavras enfatizam a ruína do injusto, sugerindo que esse seria o
+                        caminho de Jó.</div>
+                </div>
+            </div>
+
+            <!-- JÓ RESPONDE 5 -->
+            <div class="event">
+                <div class="event-card">
+                    <div class="event-header">
+                        <div class="avatar">
+                            <svg viewBox="0 0 24 24">
+                                <circle cx="12" cy="7" r="3.5"></circle>
+                                <path d="M6 18h12c-1.2-3-3-4.5-6-4.5S7.2 15 6 18z"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <div class="speaker">Jó</div>
+                            <div class="ref">
+                                <a href="https://www.bibliaonline.com.br/NAA/jó/19" target="_blank">Jó 19</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="event-title">Resposta de Jó a Bildade</div>
+                    <div class="event-summary">Afirma que seu Redentor vive e que verá Deus.</div>
+                    <div class="event-detail">Mesmo na dor, Jó expressa uma esperança profunda em um defensor divino.
+                    </div>
+                </div>
+            </div>
+
+            <!-- ZOFAR 2 -->
+            <div class="event">
+                <div class="event-card">
+                    <div class="event-header">
+                        <div class="avatar">
+                            <svg viewBox="0 0 24 24">
+                                <circle cx="12" cy="7" r="3.5"></circle>
+                                <path d="M6 18h12c-1.2-3-3-4.5-6-4.5S7.2 15 6 18z"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <div class="speaker">Zofar</div>
+                            <div class="ref">
+                                <a href="https://www.bibliaonline.com.br/NAA/jó/20" target="_blank">Jó 20</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="event-title">Segundo discurso de Zofar</div>
+                    <div class="event-summary">Diz que a alegria do ímpio é breve.</div>
+                    <div class="event-detail">Zofar descreve a queda rápida daquele que pratica o mal.</div>
+                </div>
+            </div>
+
+            <!-- JÓ RESPONDE 6 -->
+            <div class="event">
+                <div class="event-card">
+                    <div class="event-header">
+                        <div class="avatar">
+                            <svg viewBox="0 0 24 24">
+                                <circle cx="12" cy="7" r="3.5"></circle>
+                                <path d="M6 18h12c-1.2-3-3-4.5-6-4.5S7.2 15 6 18z"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <div class="speaker">Jó</div>
+                            <div class="ref">
+                                <a href="https://www.bibliaonline.com.br/NAA/jó/21" target="_blank">Jó 21</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="event-title">Resposta de Jó a Zofar</div>
+                    <div class="event-summary">Questiona por que muitos ímpios prosperam.</div>
+                    <div class="event-detail">Jó mostra que a realidade não confirma a ideia de que o ímpio sempre
+                        sofre.</div>
+                </div>
+            </div>
+            <!-- CICLO 3 -->
+            <!-- ELIFAZ 3 -->
+            <div class="event">
+                <div class="event-card">
+                    <div class="event-header">
+                        <div class="avatar">
+                            <svg viewBox="0 0 24 24">
+                                <circle cx="12" cy="7" r="3.5"></circle>
+                                <path d="M6 18h12c-1.2-3-3-4.5-6-4.5S7.2 15 6 18z"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <div class="speaker">Elifaz</div>
+                            <div class="ref">
+                                <a href="https://www.bibliaonline.com.br/NAA/jó/22" target="_blank">Jó 22</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="event-title">Terceiro discurso de Elifaz</div>
+                    <div class="event-summary">Acusa Jó de pecados específicos e insiste no arrependimento.</div>
+                    <div class="event-detail">Elifaz menciona injustiças contra pobres e necessitados, atribuindo-as a
+                        Jó sem provas.</div>
+                </div>
+            </div>
+
+            <!-- JÓ RESPONDE 7 -->
+            <div class="event">
+                <div class="event-card">
+                    <div class="event-header">
+                        <div class="avatar">
+                            <svg viewBox="0 0 24 24">
+                                <circle cx="12" cy="7" r="3.5"></circle>
+                                <path d="M6 18h12c-1.2-3-3-4.5-6-4.5S7.2 15 6 18z"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <div class="speaker">Jó</div>
+                            <div class="ref">
+                                <a href="https://www.bibliaonline.com.br/NAA/jó/23" target="_blank">Jó 23</a> –
+                                <a href="https://www.bibliaonline.com.br/NAA/jó/24" target="_blank">24</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="event-title">Resposta de Jó a Elifaz</div>
+                    <div class="event-summary">Afirma que Deus parece distante, mas continua buscando-o.</div>
+                    <div class="event-detail">Jó reconhece que não compreende os caminhos de Deus, mas insiste em
+                        encontrá-lo e apresentar sua causa.</div>
+                </div>
+            </div>
+
+            <!-- BILDADE 3 -->
+            <div class="event">
+                <div class="event-card">
+                    <div class="event-header">
+                        <div class="avatar">
+                            <svg viewBox="0 0 24 24">
+                                <circle cx="12" cy="7" r="3.5"></circle>
+                                <path d="M6 18h12c-1.2-3-3-4.5-6-4.5S7.2 15 6 18z"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <div class="speaker">Bildade</div>
+                            <div class="ref">
+                                <a href="https://www.bibliaonline.com.br/NAA/jó/25" target="_blank">Jó 25</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="event-title">Terceiro discurso de Bildade</div>
+                    <div class="event-summary">Diz que o homem é pequeno e impuro diante de Deus.</div>
+                    <div class="event-detail">Seu discurso é curto e reforça a distância entre Deus e a humanidade, sem
+                        responder às questões de Jó.</div>
+                </div>
+            </div>
+
+            <!-- JÓ RESPONDE 8 (DISCURSO FINAL) -->
+            <div class="event">
+                <div class="event-card">
+                    <div class="event-header">
+                        <div class="avatar">
+                            <svg viewBox="0 0 24 24">
+                                <circle cx="12" cy="7" r="3.5"></circle>
+                                <path d="M6 18h12c-1.2-3-3-4.5-6-4.5S7.2 15 6 18z"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <div class="speaker">Jó</div>
+                            <div class="ref">
+                                <a href="https://www.bibliaonline.com.br/NAA/jó/26" target="_blank">Jó 26</a> –
+                                <a href="https://www.bibliaonline.com.br/NAA/jó/31" target="_blank">31</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="event-title">Discurso final de Jó</div>
+                    <div class="event-summary">Exalta o poder de Deus e reafirma sua integridade.</div>
+                    <div class="event-detail">
+                        Jó revisa sua vida, declara sua justiça, descreve a grandeza de Deus e encerra com um juramento
+                        de inocência.
+                    </div>
+                </div>
+            </div>
+            <!-- ELIÚ (Jó 32–37) -->
+            <div class="event">
+                <div class="event-card">
+                    <div class="event-header">
+                        <div class="avatar">
+                            <svg viewBox="0 0 24 24">
+                                <circle cx="12" cy="7" r="3.5"></circle>
+                                <path d="M6 18h12c-1.2-3-3-4.5-6-4.5S7.2 15 6 18z"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <div class="speaker">Eliú</div>
+                            <div class="ref">
+                                <a href="https://www.bibliaonline.com.br/NAA/jó/32" target="_blank">Jó 32</a> –
+                                <a href="https://www.bibliaonline.com.br/NAA/jó/37" target="_blank">37</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="event-title">Discursos de Eliú</div>
+                    <div class="event-summary">Apresenta o sofrimento como disciplina e insiste na justiça de Deus.
+                    </div>
+                    <div class="event-detail">
+                        Eliú tenta trazer uma perspectiva diferente, destacando que Deus fala de várias maneiras e que a
+                        dor pode ensinar e corrigir.
+                    </div>
+                </div>
+            </div>
+
+            <!-- DEUS 1 (Jó 38–40) -->
+            <div class="event">
+                <div class="event-card">
+                    <div class="event-header">
+                        <div class="avatar avatar-deus">DEUS</div>
+                        <div>
+                            <div class="speaker">DEUS</div>
+                            <div class="ref">
+                                <a href="https://www.bibliaonline.com.br/NAA/jó/38" target="_blank">Jó 38</a> –
+                                <a href="https://www.bibliaonline.com.br/NAA/jó/40" target="_blank">40</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="event-title">Primeiro discurso de Deus</div>
+                    <div class="event-summary">Questiona Jó sobre a criação, revelando sua sabedoria e poder.</div>
+                    <div class="event-detail">
+                        Deus não explica o sofrimento, mas mostra a Jó a grandeza de sua obra e a limitação humana
+                        diante do universo.
+                    </div>
+                </div>
+            </div>
+
+            <!-- JÓ RESPONDE A DEUS 1 (Jó 40) -->
+            <div class="event">
+                <div class="event-card">
+                    <div class="event-header">
+                        <div class="avatar">
+                            <svg viewBox="0 0 24 24">
+                                <circle cx="12" cy="7" r="3.5"></circle>
+                                <path d="M6 18h12c-1.2-3-3-4.5-6-4.5S7.2 15 6 18z"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <div class="speaker">Jó</div>
+                            <div class="ref">
+                                <a href="https://www.bibliaonline.com.br/NAA/jó/40" target="_blank">Jó 40</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="event-title">Primeira resposta de Jó</div>
+                    <div class="event-summary">Reconhece sua pequenez e limitações diante de Deus.</div>
+                    <div class="event-detail">
+                        Jó se cala e admite que falou sem compreender plenamente os caminhos divinos.
+                    </div>
+                </div>
+            </div>
+
+            <!-- DEUS 2 (Jó 40–41) -->
+            <div class="event">
+                <div class="event-card">
+                    <div class="event-header">
+                        <div class="avatar avatar-deus">DEUS</div>
+                        <div>
+                            <div class="speaker">DEUS</div>
+                            <div class="ref">
+                                <a href="https://www.bibliaonline.com.br/NAA/jó/40" target="_blank">Jó 40</a> –
+                                <a href="https://www.bibliaonline.com.br/NAA/jó/41" target="_blank">41</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="event-title">Segundo discurso de Deus</div>
+                    <div class="event-summary">Descreve criaturas poderosas para enfatizar sua soberania.</div>
+                    <div class="event-detail">
+                        Ao mencionar beemote e leviatã, Deus destaca o limite da compreensão humana sobre sua criação e
+                        governo.
+                    </div>
+                </div>
+            </div>
+
+            <!-- JÓ RESPONDE A DEUS 2 (Jó 42) -->
+            <div class="event">
+                <div class="event-card">
+                    <div class="event-header">
+                        <div class="avatar">
+                            <svg viewBox="0 0 24 24">
+                                <circle cx="12" cy="7" r="3.5"></circle>
+                                <path d="M6 18h12c-1.2-3-3-4.5-6-4.5S7.2 15 6 18z"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <div class="speaker">Jó</div>
+                            <div class="ref">
+                                <a href="https://www.bibliaonline.com.br/NAA/jó/42" target="_blank">Jó 42</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="event-title">Segunda resposta de Jó</div>
+                    <div class="event-summary">Arrepende-se e declara que agora conhece Deus de forma mais profunda.
+                    </div>
+                    <div class="event-detail">
+                        Jó confessa que seus conhecimentos eram limitados e se submete humildemente à sabedoria divina.
+                    </div>
+                </div>
+            </div>
+
+            <!-- EPÍLOGO (Jó 42) -->
+            <div class="event">
+                <div class="event-card">
+                    <div class="event-header">
+                        <div class="avatar">
+                            <svg viewBox="0 0 24 24">
+                                <circle cx="12" cy="7" r="3.5"></circle>
+                                <path d="M6 18h12c-1.2-3-3-4.5-6-4.5S7.2 15 6 18z"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <div class="speaker">Narrador</div>
+                            <div class="ref">
+                                <a href="https://www.bibliaonline.com.br/NAA/jó/42" target="_blank">Jó 42</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="event-title">Epílogo: correção e restauração</div>
+                    <div class="event-summary">Deus corrige os amigos de Jó e restaura sua sorte.</div>
+                    <div class="event-detail">
+                        Jó intercede pelos amigos, recebe o dobro do que tinha e vive uma nova fase de abundância e paz.
+                    </div>
+                </div>
+            </div>
+
+            </div> <!-- fim da timeline completa -->
+
+            <button class="back-btn" onclick="goBack()">← Voltar ao menu</button>
+        </section>
+        <!-- TIMELINE SIMPLIFICADA -->
+        <section id="timeline-simplificada" class="panel hidden">
+            <h2>Timeline Simplificada – Por personagem</h2>
+            <p>Visão geral do papel de cada personagem principal.</p>
+
+            <div class="font-controls">
+                <button onclick="changeFontSize(1)">A+</button>
+                <button onclick="changeFontSize(-1)">A-</button>
+            </div>
+
+            <div class="timeline">
+
+                <!-- JÓ -->
+                <div class="event">
+                    <div class="event-card">
+                        <div class="event-header">
+                            <div class="avatar">
+                                <svg viewBox="0 0 24 24">
+                                    <circle cx="12" cy="7" r="3.5" />
+                                    <path d="M6 18h12c-1.2-3-3-4.5-6-4.5S7.2 15 6 18z" />
+                                </svg>
+                            </div>
+                            <div>
+                                <div class="speaker">Jó</div>
+                                <div class="ref">
+                                    <a href="https://www.bibliaonline.com.br/NAA/jó/1" target="_blank">1</a>–
+                                    <a href="https://www.bibliaonline.com.br/NAA/jó/3" target="_blank">3</a>;
+                                    <a href="https://www.bibliaonline.com.br/NAA/jó/6" target="_blank">6</a>–
+                                    <a href="https://www.bibliaonline.com.br/NAA/jó/7" target="_blank">7</a>;
+                                    <a href="https://www.bibliaonline.com.br/NAA/jó/9" target="_blank">9</a>–
+                                    <a href="https://www.bibliaonline.com.br/NAA/jó/10" target="_blank">10</a>;
+                                    <a href="https://www.bibliaonline.com.br/NAA/jó/12" target="_blank">12</a>–
+                                    <a href="https://www.bibliaonline.com.br/NAA/jó/14" target="_blank">14</a>;
+                                    <a href="https://www.bibliaonline.com.br/NAA/jó/16" target="_blank">16</a>–
+                                    <a href="https://www.bibliaonline.com.br/NAA/jó/17" target="_blank">17</a>;
+                                    <a href="https://www.bibliaonline.com.br/NAA/jó/19" target="_blank">19</a>;
+                                    <a href="https://www.bibliaonline.com.br/NAA/jó/21" target="_blank">21</a>;
+                                    <a href="https://www.bibliaonline.com.br/NAA/jó/23" target="_blank">23</a>–
+                                    <a href="https://www.bibliaonline.com.br/NAA/jó/24" target="_blank">24</a>;
+                                    <a href="https://www.bibliaonline.com.br/NAA/jó/26" target="_blank">26</a>–
+                                    <a href="https://www.bibliaonline.com.br/NAA/jó/31" target="_blank">31</a>;
+                                    <a href="https://www.bibliaonline.com.br/NAA/jó/40" target="_blank">40</a>;
+                                    <a href="https://www.bibliaonline.com.br/NAA/jó/42" target="_blank">42</a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="event-title">Lamento, defesa e fé</div>
+                        <div class="event-summary">Jó lamenta, questiona e defende sua integridade, mas continua se
+                            voltando para Deus.</div>
+                        <div class="event-detail">Mesmo sem entender o motivo do sofrimento, ele mantém esperança
+                            profunda e busca a presença de Deus.</div>
+                    </div>
+                </div>
+
+                <!-- ELIFAZ -->
+                <div class="event">
+                    <div class="event-card">
+                        <div class="event-header">
+                            <div class="avatar">
+                                <svg viewBox="0 0 24 24">
+                                    <circle cx="12" cy="7" r="3.5" />
+                                    <path d="M6 18h12c-1.2-3-3-4.5-6-4.5S7.2 15 6 18z" />
+                                </svg>
+                            </div>
+                            <div>
+                                <div class="speaker">Elifaz</div>
+                                <div class="ref">
+                                    <a href="https://www.bibliaonline.com.br/NAA/jó/4" target="_blank">4</a>–
+                                    <a href="https://www.bibliaonline.com.br/NAA/jó/5" target="_blank">5</a>;
+                                    <a href="https://www.bibliaonline.com.br/NAA/jó/15" target="_blank">15</a>;
+                                    <a href="https://www.bibliaonline.com.br/NAA/jó/22" target="_blank">22</a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="event-title">Experiência e retribuição</div>
+                        <div class="event-summary">Baseia-se em sua experiência para afirmar que Deus disciplina o
+                            culpado.</div>
+                        <div class="event-detail">Tenta consolar, mas acaba enquadrando Jó numa lógica rígida de causa e
+                            efeito moral.</div>
+                    </div>
+                </div>
+                <!-- BILDADE -->
+                <div class="event">
+                    <div class="event-card">
+                        <div class="event-header">
+                            <div class="avatar">
+                                <svg viewBox="0 0 24 24">
+                                    <circle cx="12" cy="7" r="3.5" />
+                                    <path d="M6 18h12c-1.2-3-3-4.5-6-4.5S7.2 15 6 18z" />
+                                </svg>
+                            </div>
+                            <div>
+                                <div class="speaker">Bildade</div>
+                                <div class="ref">
+                                    <a href="https://www.bibliaonline.com.br/NAA/jó/8" target="_blank">8</a>;
+                                    <a href="https://www.bibliaonline.com.br/NAA/jó/18" target="_blank">18</a>;
+                                    <a href="https://www.bibliaonline.com.br/NAA/jó/25" target="_blank">25</a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="event-title">Defesa da justiça de Deus</div>
+                        <div class="event-summary">Insiste que Deus não perverte a justiça; logo, alguém deve estar
+                            errado.</div>
+                        <div class="event-detail">Aplica um conceito rígido de justiça, sem considerar o mistério da dor
+                            do justo.</div>
+                    </div>
+                </div>
+
+                <!-- ZOFAR -->
+                <div class="event">
+                    <div class="event-card">
+                        <div class="event-header">
+                            <div class="avatar">
+                                <svg viewBox="0 0 24 24">
+                                    <circle cx="12" cy="7" r="3.5" />
+                                    <path d="M6 18h12c-1.2-3-3-4.5-6-4.5S7.2 15 6 18z" />
+                                </svg>
+                            </div>
+                            <div>
+                                <div class="speaker">Zofar</div>
+                                <div class="ref">
+                                    <a href="https://www.bibliaonline.com.br/NAA/jó/11" target="_blank">11</a>;
+                                    <a href="https://www.bibliaonline.com.br/NAA/jó/20" target="_blank">20</a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="event-title">Acusação mais dura</div>
+                        <div class="event-summary">É o mais agressivo, acusando Jó de ocultar pecados.</div>
+                        <div class="event-detail">Sua fala reforça a ideia de que a alegria do ímpio é breve e que Jó
+                            precisa se arrepender.</div>
+                    </div>
+                </div>
+
+                <!-- ELIÚ -->
+                <div class="event">
+                    <div class="event-card">
+                        <div class="event-header">
+                            <div class="avatar">
+                                <svg viewBox="0 0 24 24">
+                                    <circle cx="12" cy="7" r="3.5" />
+                                    <path d="M6 18h12c-1.2-3-3-4.5-6-4.5S7.2 15 6 18z" />
+                                </svg>
+                            </div>
+                            <div>
+                                <div class="speaker">Eliú</div>
+                                <div class="ref">
+                                    <a href="https://www.bibliaonline.com.br/NAA/jó/32" target="_blank">32</a>–
+                                    <a href="https://www.bibliaonline.com.br/NAA/jó/37" target="_blank">37</a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="event-title">Intervenção mais jovem</div>
+                        <div class="event-summary">Propõe que o sofrimento também pode ser disciplina pedagógica.</div>
+                        <div class="event-detail">Busca defender a justiça de Deus e dar novo sentido à dor de Jó.</div>
+                    </div>
+                </div>
+
+                <!-- DEUS -->
+                <div class="event">
+                    <div class="event-card">
+                        <div class="event-header">
+                            <div class="avatar avatar-deus">DEUS</div>
+                            <div>
+                                <div class="speaker">DEUS</div>
+                                <div class="ref">
+                                    <a href="https://www.bibliaonline.com.br/NAA/jó/38" target="_blank">38</a>–
+                                    <a href="https://www.bibliaonline.com.br/NAA/jó/41" target="_blank">41</a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="event-title">Revelação e questionamento</div>
+                        <div class="event-summary">Deus fala, não para explicar tudo, mas para revelar quem Ele é.</div>
+                        <div class="event-detail">Mostra a Jó a vastidão da criação, convidando-o a confiar mesmo sem
+                            todas as respostas.</div>
+                    </div>
+                </div>
+
+                <!-- NARRADOR -->
+                <div class="event">
+                    <div class="event-card">
+                        <div class="event-header">
+                            <div class="avatar">
+                                <svg viewBox="0 0 24 24">
+                                    <circle cx="12" cy="7" r="3.5" />
+                                    <path d="M6 18h12c-1.2-3-3-4.5-6-4.5S7.2 15 6 18z" />
+                                </svg>
+                            </div>
+                            <div>
+                                <div class="speaker">Narrador</div>
+                                <div class="ref">
+                                    <a href="https://www.bibliaonline.com.br/NAA/jó/1" target="_blank">1</a>–
+                                    <a href="https://www.bibliaonline.com.br/NAA/jó/2" target="_blank">2</a>;
+                                    <a href="https://www.bibliaonline.com.br/NAA/jó/42" target="_blank">42</a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="event-title">Introdução e conclusão</div>
+                        <div class="event-summary">Mostra o pano de fundo espiritual e a restauração final de Jó.</div>
+                        <div class="event-detail">Enquadra o livro como uma história sobre Deus, o sofrimento e a fé
+                            perseverante.</div>
+                    </div>
+                </div>
+
+            </div>
+
+            <button class="back-btn" onclick="goBack()">← Voltar ao menu</button>
+        </section>
+        <!-- TIMELINE TEMÁTICA -->
+        <section id="timeline-tematica" class="panel hidden">
+            <h2>Timeline Temática – Por tipo de discurso</h2>
+            <p>Acusações dos amigos, respostas de Jó, intervenção de Eliú e revelação de Deus.</p>
+
+            <div class="font-controls">
+                <button onclick="changeFontSize(1)">A+</button>
+                <button onclick="changeFontSize(-1)">A-</button>
+            </div>
+
+            <div class="timeline">
+
+                <!-- AMIGOS DE JÓ -->
+                <div class="event">
+                    <div class="event-card">
+                        <div class="event-header">
+                            <div class="avatar">
+                                <svg viewBox="0 0 24 24">
+                                    <circle cx="12" cy="7" r="3.5" />
+                                    <path d="M6 18h12c-1.2-3-3-4.5-6-4.5S7.2 15 6 18z" />
+                                </svg>
+                            </div>
+                            <div>
+                                <div class="speaker">Amigos de Jó</div>
+                                <div class="ref">
+                                    <a href="https://www.bibliaonline.com.br/NAA/jó/4" target="_blank">4</a>–
+                                    <a href="https://www.bibliaonline.com.br/NAA/jó/5" target="_blank">5</a>;
+                                    <a href="https://www.bibliaonline.com.br/NAA/jó/8" target="_blank">8</a>;
+                                    <a href="https://www.bibliaonline.com.br/NAA/jó/11" target="_blank">11</a>;
+                                    <a href="https://www.bibliaonline.com.br/NAA/jó/15" target="_blank">15</a>;
+                                    <a href="https://www.bibliaonline.com.br/NAA/jó/18" target="_blank">18</a>;
+                                    <a href="https://www.bibliaonline.com.br/NAA/jó/20" target="_blank">20</a>;
+                                    <a href="https://www.bibliaonline.com.br/NAA/jó/22" target="_blank">22</a>;
+                                    <a href="https://www.bibliaonline.com.br/NAA/jó/25" target="_blank">25</a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="event-title">Acusações e teologia da retribuição</div>
+                        <div class="event-summary">Defendem que Deus é justo e que o sofrimento de Jó revela culpa.
+                        </div>
+                        <div class="event-detail">
+                            Elifaz, Bildade e Zofar repetem, com nuances diferentes, a ideia de que Deus sempre pune o
+                            ímpio e recompensa o justo.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- JÓ (RESPOSTAS E LAMENTOS) -->
+                <div class="event">
+                    <div class="event-card">
+                        <div class="event-header">
+                            <div class="avatar">
+                                <svg viewBox="0 0 24 24">
+                                    <circle cx="12" cy="7" r="3.5" />
+                                    <path d="M6 18h12c-1.2-3-3-4.5-6-4.5S7.2 15 6 18z" />
+                                </svg>
+                            </div>
+                            <div>
+                                <div class="speaker">Jó</div>
+                                <div class="ref">
+                                    <a href="https://www.bibliaonline.com.br/NAA/jó/3" target="_blank">3</a>;
+                                    <a href="https://www.bibliaonline.com.br/NAA/jó/6" target="_blank">6</a>–
+                                    <a href="https://www.bibliaonline.com.br/NAA/jó/7" target="_blank">7</a>;
+                                    <a href="https://www.bibliaonline.com.br/NAA/jó/9" target="_blank">9</a>–
+                                    <a href="https://www.bibliaonline.com.br/NAA/jó/10" target="_blank">10</a>;
+                                    <a href="https://www.bibliaonline.com.br/NAA/jó/12" target="_blank">12</a>–
+                                    <a href="https://www.bibliaonline.com.br/NAA/jó/14" target="_blank">14</a>;
+                                    <a href="https://www.bibliaonline.com.br/NAA/jó/16" target="_blank">16</a>–
+                                    <a href="https://www.bibliaonline.com.br/NAA/jó/17" target="_blank">17</a>;
+                                    <a href="https://www.bibliaonline.com.br/NAA/jó/19" target="_blank">19</a>;
+                                    <a href="https://www.bibliaonline.com.br/NAA/jó/21" target="_blank">21</a>;
+                                    <a href="https://www.bibliaonline.com.br/NAA/jó/23" target="_blank">23</a>–
+                                    <a href="https://www.bibliaonline.com.br/NAA/jó/24" target="_blank">24</a>;
+                                    <a href="https://www.bibliaonline.com.br/NAA/jó/26" target="_blank">26</a>–
+                                    <a href="https://www.bibliaonline.com.br/NAA/jó/31" target="_blank">31</a>;
+                                    <a href="https://www.bibliaonline.com.br/NAA/jó/40" target="_blank">40</a>;
+                                    <a href="https://www.bibliaonline.com.br/NAA/jó/42" target="_blank">42</a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="event-title">Respostas, lamento e esperança</div>
+                        <div class="event-summary">Jó alterna entre dor, protesto e confiança em Deus.</div>
+                        <div class="event-detail">
+                            Ele recusa explicações simplistas, confessa sua limitação e, ainda assim, mantém esperança
+                            em um Redentor.
+                        </div>
+                    </div>
+                </div>
+                <!-- ELIÚ -->
+                <div class="event">
+                    <div class="event-card">
+                        <div class="event-header">
+                            <div class="avatar">
+                                <svg viewBox="0 0 24 24">
+                                    <circle cx="12" cy="7" r="3.5" />
+                                    <path d="M6 18h12c-1.2-3-3-4.5-6-4.5S7.2 15 6 18z" />
+                                </svg>
+                            </div>
+                            <div>
+                                <div class="speaker">Eliú</div>
+                                <div class="ref">
+                                    <a href="https://www.bibliaonline.com.br/NAA/jó/32" target="_blank">32</a>–
+                                    <a href="https://www.bibliaonline.com.br/NAA/jó/37" target="_blank">37</a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="event-title">Intervenção e disciplina</div>
+                        <div class="event-summary">Aponta que o sofrimento também pode servir como correção e ensino.
+                        </div>
+                        <div class="event-detail">
+                            Eliú enfatiza que Deus fala de várias maneiras e que a dor pode chamar o ser humano ao
+                            arrependimento.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- DEUS -->
+                <div class="event">
+                    <div class="event-card">
+                        <div class="event-header">
+                            <div class="avatar avatar-deus">DEUS</div>
+                            <div>
+                                <div class="speaker">DEUS</div>
+                                <div class="ref">
+                                    <a href="https://www.bibliaonline.com.br/NAA/jó/38" target="_blank">38</a>–
+                                    <a href="https://www.bibliaonline.com.br/NAA/jó/41" target="_blank">41</a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="event-title">Revelação e sabedoria divina</div>
+                        <div class="event-summary">Deus muda o foco: da explicação do sofrimento para a revelação de
+                            quem Ele é.</div>
+                        <div class="event-detail">
+                            Mostra a Jó a grandeza da criação e da providência divina, convidando-o a confiar mesmo sem
+                            entender tudo.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- NARRADOR -->
+                <div class="event">
+                    <div class="event-card">
+                        <div class="event-header">
+                            <div class="avatar">
+                                <svg viewBox="0 0 24 24">
+                                    <circle cx="12" cy="7" r="3.5" />
+                                    <path d="M6 18h12c-1.2-3-3-4.5-6-4.5S7.2 15 6 18z" />
+                                </svg>
+                            </div>
+                            <div>
+                                <div class="speaker">Narrador</div>
+                                <div class="ref">
+                                    <a href="https://www.bibliaonline.com.br/NAA/jó/1" target="_blank">1</a>–
+                                    <a href="https://www.bibliaonline.com.br/NAA/jó/2" target="_blank">2</a>;
+                                    <a href="https://www.bibliaonline.com.br/NAA/jó/42" target="_blank">42</a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="event-title">Cenário e restauração</div>
+                        <div class="event-summary">Enquadra o drama de Jó e mostra a correção divina aos amigos e a
+                            restauração final.</div>
+                        <div class="event-detail">
+                            No início, revela o pano de fundo espiritual; no fim, destaca a fidelidade de Deus e a
+                            vindicação de Jó.
+                        </div>
+                    </div>
+                </div>
+
+            </div> <!-- fim da timeline temática -->
+
+            <button class="back-btn" onclick="goBack()">← Voltar ao menu</button>
+        </section>
+
+    </main>
+
+    <!-- SCRIPTS FINAIS -->
+    <script>
+        function openTimeline(id) {
+            document.getElementById("menu").classList.add("hidden");
+            document.getElementById("timeline-completa").classList.add("hidden");
+            document.getElementById("timeline-simplificada").classList.add("hidden");
+            document.getElementById("timeline-tematica").classList.add("hidden");
+
+            document.getElementById("timeline-" + id).classList.remove("hidden");
+        }
+
+        function goBack() {
+            document.getElementById("menu").classList.remove("hidden");
+            document.getElementById("timeline-completa").classList.add("hidden");
+            document.getElementById("timeline-simplificada").classList.add("hidden");
+            document.getElementById("timeline-tematica").classList.add("hidden");
+        }
+
+        let currentFontSize = 1;
+        function changeFontSize(delta) {
+            currentFontSize += delta * 0.1;
+            if (currentFontSize < 0.7) currentFontSize = 0.7;
+            if (currentFontSize > 1.6) currentFontSize = 1.6;
+            document.body.style.fontSize = currentFontSize + "em";
+        }
+
+        document.addEventListener("click", function (e) {
+            const card = e.target.closest(".event-card");
+            if (!card) return;
+            card.classList.toggle("expanded");
+        });
+
+        // Replace generic SVG avatars with character images
+        (function () {
+            const speakerToClass = {
+                'Jó': 'avatar-jo',
+                'Bildade': 'avatar-bildade',
+                'Elifaz': 'avatar-elifaz',
+                'Zofar': 'avatar-zofar',
+                'DEUS': 'avatar-deus-img',
+                'Deus': 'avatar-deus-img',
+                'Eliú': 'avatar-eliu',
+                'Satanás': 'avatar-satanas'
+            };
+
+            document.querySelectorAll('.event-header').forEach(header => {
+                const speakerEl = header.querySelector('.speaker');
+                const avatar = header.querySelector('.avatar');
+
+                if (speakerEl && avatar) {
+                    const speakerName = speakerEl.textContent.trim();
+                    const avatarClass = speakerToClass[speakerName];
+
+                    if (avatarClass) {
+                        // Replace SVG avatar with image avatar
+                        avatar.innerHTML = '';
+                        avatar.classList.add('avatar-img', avatarClass);
+                    }
+                }
+            });
+        })();
+    </script>
+
+</body>
+
+</html>

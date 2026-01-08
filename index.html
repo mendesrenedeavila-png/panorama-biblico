@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Panorama Bíblico – Explore os Livros da Bíblia</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --gold: #c9a227;
+            --gold-light: #e8d48b;
+            --gold-dark: #8b7019;
+            --bg-dark: #0c0c0c;
+            --bg-card: rgba(25, 25, 30, 0.85);
+            --text-light: #f5f5f5;
+            --text-muted: #888;
+            --at-color: #d4a853;
+            --nt-color: #60a5fa;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-light);
+            min-height: 100vh;
+        }
+
+        /* Background */
+        .bg-pattern {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background:
+                radial-gradient(ellipse at 20% 30%, rgba(212, 168, 83, 0.08) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 70%, rgba(96, 165, 250, 0.06) 0%, transparent 50%),
+                radial-gradient(ellipse at bottom, #1a1a2e 0%, #0c0c0c 100%);
+        }
+
+        /* Header */
+        header {
+            text-align: center;
+            padding: 60px 20px 40px;
+        }
+
+        .site-label {
+            font-size: 0.7rem;
+            font-weight: 500;
+            letter-spacing: 0.4em;
+            text-transform: uppercase;
+            color: var(--gold);
+            margin-bottom: 16px;
+        }
+
+        .site-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: clamp(2.5rem, 6vw, 4rem);
+            font-weight: 600;
+            background: linear-gradient(180deg, var(--gold-light) 0%, var(--gold) 40%, var(--gold-dark) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 16px;
+        }
+
+        .site-subtitle {
+            font-size: 1rem;
+            color: var(--text-muted);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* Main content */
+        main {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Testament sections */
+        .testament {
+            margin-bottom: 60px;
+        }
+
+        .testament-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 24px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .testament-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .testament-icon.at {
+            background: rgba(212, 168, 83, 0.15);
+        }
+
+        .testament-icon.nt {
+            background: rgba(96, 165, 250, 0.15);
+        }
+
+        .testament-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.8rem;
+            font-weight: 600;
+        }
+
+        .testament-title.at {
+            color: var(--at-color);
+        }
+
+        .testament-title.nt {
+            color: var(--nt-color);
+        }
+
+        /* Category */
+        .category {
+            margin-bottom: 32px;
+        }
+
+        .category-title {
+            font-size: 0.75rem;
+            font-weight: 500;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            margin-bottom: 16px;
+        }
+
+        /* Books grid */
+        .books-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 12px;
+        }
+
+        .book-card {
+            position: relative;
+            background: var(--bg-card);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            padding: 16px 12px;
+            text-align: center;
+            text-decoration: none;
+            color: inherit;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            backdrop-filter: blur(10px);
+        }
+
+        .book-card:hover {
+            transform: translateY(-4px);
+            border-color: var(--gold);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3), 0 0 20px rgba(201, 162, 39, 0.1);
+        }
+
+        .book-card.available {
+            cursor: pointer;
+        }
+
+        .book-card.coming-soon {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .book-card.coming-soon:hover {
+            transform: none;
+            border-color: rgba(255, 255, 255, 0.08);
+            box-shadow: none;
+        }
+
+        .book-icon {
+            font-size: 1.8rem;
+            margin-bottom: 8px;
+        }
+
+        .book-name {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1rem;
+            font-weight: 600;
+            line-height: 1.2;
+        }
+
+        .book-chapters {
+            font-size: 0.65rem;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        .book-badge {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            font-size: 0.55rem;
+            font-weight: 600;
+            padding: 2px 6px;
+            border-radius: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .book-badge.available {
+            background: rgba(52, 211, 153, 0.2);
+            color: #34d399;
+        }
+
+        .book-badge.coming {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-muted);
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 40px 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            margin-top: 40px;
+        }
+
+        .footer-text {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-bottom: 16px;
+        }
+
+        .credit-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            color: rgba(255, 255, 255, 0.4);
+            text-decoration: none;
+            font-size: 0.75rem;
+            transition: color 0.3s;
+        }
+
+        .credit-link:hover {
+            color: var(--gold);
+        }
+
+        .google-logo {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+            background: linear-gradient(135deg, #4285f4, #34a853, #fbbc05, #ea4335);
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .books-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="bg-pattern"></div>
+
+    <header>
+        <div class="site-label">Explore a Palavra</div>
+        <h1 class="site-title">Panorama Bíblico</h1>
+        <p class="site-subtitle">Uma jornada interativa através dos livros da Bíblia. Escolha um livro para explorar sua
+            estrutura, personagens e temas.</p>
+    </header>
+
+    <main>
+        <!-- ANTIGO TESTAMENTO -->
+        <section class="testament">
+            <div class="testament-header">
+                <div class="testament-icon at">📜</div>
+                <h2 class="testament-title at">Antigo Testamento</h2>
+            </div>
+
+            <!-- Pentateuco -->
+            <div class="category">
+                <h3 class="category-title">Pentateuco (Lei)</h3>
+                <div class="books-grid">
+                    <div class="book-card coming-soon">
+                        <div class="book-icon">📖</div>
+                        <div class="book-name">Gênesis</div>
+                        <div class="book-chapters">50 capítulos</div>
+                        <span class="book-badge coming">Em breve</span>
+                    </div>
+                    <div class="book-card coming-soon">
+                        <div class="book-icon">📖</div>
+                        <div class="book-name">Êxodo</div>
+                        <div class="book-chapters">40 capítulos</div>
+                        <span class="book-badge coming">Em breve</span>
+                    </div>
+                    <div class="book-card coming-soon">
+                        <div class="book-icon">📖</div>
+                        <div class="book-name">Levítico</div>
+                        <div class="book-chapters">27 capítulos</div>
+                        <span class="book-badge coming">Em breve</span>
+                    </div>
+                    <div class="book-card coming-soon">
+                        <div class="book-icon">📖</div>
+                        <div class="book-name">Números</div>
+                        <div class="book-chapters">36 capítulos</div>
+                        <span class="book-badge coming">Em breve</span>
+                    </div>
+                    <div class="book-card coming-soon">
+                        <div class="book-icon">📖</div>
+                        <div class="book-name">Deuteronômio</div>
+                        <div class="book-chapters">34 capítulos</div>
+                        <span class="book-badge coming">Em breve</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Históricos -->
+            <div class="category">
+                <h3 class="category-title">Livros Históricos</h3>
+                <div class="books-grid">
+                    <div class="book-card coming-soon">
+                        <div class="book-icon">📖</div>
+                        <div class="book-name">Josué</div>
+                        <div class="book-chapters">24 capítulos</div>
+                        <span class="book-badge coming">Em breve</span>
+                    </div>
+                    <div class="book-card coming-soon">
+                        <div class="book-icon">📖</div>
+                        <div class="book-name">Juízes</div>
+                        <div class="book-chapters">21 capítulos</div>
+                        <span class="book-badge coming">Em breve</span>
+                    </div>
+                    <div class="book-card coming-soon">
+                        <div class="book-icon">📖</div>
+                        <div class="book-name">Rute</div>
+                        <div class="book-chapters">4 capítulos</div>
+                        <span class="book-badge coming">Em breve</span>
+                    </div>
+                    <div class="book-card coming-soon">
+                        <div class="book-icon">📖</div>
+                        <div class="book-name">1 Samuel</div>
+                        <div class="book-chapters">31 capítulos</div>
+                        <span class="book-badge coming">Em breve</span>
+                    </div>
+                    <div class="book-card coming-soon">
+                        <div class="book-icon">📖</div>
+                        <div class="book-name">2 Samuel</div>
+                        <div class="book-chapters">24 capítulos</div>
+                        <span class="book-badge coming">Em breve</span>
+                    </div>
+                    <div class="book-card coming-soon">
+                        <div class="book-icon">📖</div>
+                        <div class="book-name">1 Reis</div>
+                        <div class="book-chapters">22 capítulos</div>
+                        <span class="book-badge coming">Em breve</span>
+                    </div>
+                    <div class="book-card coming-soon">
+                        <div class="book-icon">📖</div>
+                        <div class="book-name">2 Reis</div>
+                        <div class="book-chapters">25 capítulos</div>
+                        <span class="book-badge coming">Em breve</span>
+                    </div>
+                    <div class="book-card coming-soon">
+                        <div class="book-icon">📖</div>
+                        <div class="book-name">1 Crônicas</div>
+                        <div class="book-chapters">29 capítulos</div>
+                        <span class="book-badge coming">Em breve</span>
+                    </div>
+                    <div class="book-card coming-soon">
+                        <div class="book-icon">📖</div>
+                        <div class="book-name">2 Crônicas</div>
+                        <div class="book-chapters">36 capítulos</div>
+                        <span class="book-badge coming">Em breve</span>
+                    </div>
+                    <div class="book-card coming-soon">
+                        <div class="book-icon">📖</div>
+                        <div class="book-name">Esdras</div>
+                        <div class="book-chapters">10 capítulos</div>
+                        <span class="book-badge coming">Em breve</span>
+                    </div>
+                    <div class="book-card coming-soon">
+                        <div class="book-icon">📖</div>
+                        <div class="book-name">Neemias</div>
+                        <div class="book-chapters">13 capítulos</div>
+                        <span class="book-badge coming">Em breve</span>
+                    </div>
+                    <div class="book-card coming-soon">
+                        <div class="book-icon">📖</div>
+                        <div class="book-name">Ester</div>
+                        <div class="book-chapters">10 capítulos</div>
+                        <span class="book-badge coming">Em breve</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Poéticos/Sapienciais -->
+            <div class="category">
+                <h3 class="category-title">Livros Poéticos e de Sabedoria</h3>
+                <div class="books-grid">
+                    <a href="livros/jo/index.html" class="book-card available">
+                        <div class="book-icon">✨</div>
+                        <div class="book-name">Jó</div>
+                        <div class="book-chapters">42 capítulos</div>
+                        <span class="book-badge available">Disponível</span>
+                    </a>
+                    <div class="book-card coming-soon">
+                        <div class="book-icon">📖</div>
+                        <div class="book-name">Salmos</div>
+                        <div class="book-chapters">150 capítulos</div>
+                        <span class="book-badge coming">Em breve</span>
+                    </div>
+                    <div class="book-card coming-soon">
+                        <div class="book-icon">📖</div>
+                        <div class="book-name">Provérbios</div>
+                        <div class="book-chapters">31 capítulos</div>
+                        <span class="book-badge coming">Em breve</span>
+                    </div>
+                    <div class="book-card coming-soon">
+                        <div class="book-icon">📖</div>
+                        <div class="book-name">Eclesiastes</div>
+                        <div class="book-chapters">12 capítulos</div>
+                        <span class="book-badge coming">Em breve</span>
+                    </div>
+                    <div class="book-card coming-soon">
+                        <div class="book-icon">📖</div>
+                        <div class="book-name">Cantares</div>
+                        <div class="book-chapters">8 capítulos</div>
+                        <span class="book-badge coming">Em breve</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Profetas Maiores -->
+            <div class="category">
+                <h3 class="category-title">Profetas Maiores</h3>
+                <div class="books-grid">
+                    <div class="book-card coming-soon">
+                        <div class="book-icon">📖</div>
+                        <div class="book-name">Isaías</div>
+                        <div class="book-chapters">66 capítulos</div>
+                        <span class="book-badge coming">Em breve</span>
+                    </div>
+                    <div class="book-card coming-soon">
+                        <div class="book-icon">📖</div>
+                        <div class="book-name">Jeremias</div>
+                        <div class="book-chapters">52 capítulos</div>
+                        <span class="book-badge coming">Em breve</span>
+                    </div>
+                    <div class="book-card coming-soon">
+                        <div class="book-icon">📖</div>
+                        <div class="book-name">Lamentações</div>
+                        <div class="book-chapters">5 capítulos</div>
+                        <span class="book-badge coming">Em breve</span>
+                    </div>
+                    <div class="book-card coming-soon">
+                        <div class="book-icon">📖</div>
+                        <div class="book-name">Ezequiel</div>
+                        <div class="book-chapters">48 capítulos</div>
+                        <span class="book-badge coming">Em breve</span>
+                    </div>
+                    <div class="book-card coming-soon">
+                        <div class="book-icon">📖</div>
+                        <div class="book-name">Daniel</div>
+                        <div class="book-chapters">12 capítulos</div>
+                        <span class="book-badge coming">Em breve</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Profetas Menores -->
+            <div class="category">
+                <h3 class="category-title">Profetas Menores</h3>
+                <div class="books-grid">
+                    <div class="book-card coming-soon">
+                        <div class="book-icon">📖</div>
+                        <div class="book-name">Oseias</div>
+                        <div class="book-chapters">14 capítulos</div>
+                        <span class="book-badge coming">Em breve</span>
+                    </div>
+                    <div class="book-card coming-soon">
+                        <div class="book-icon">📖</div>
+                        <div class="book-name">Joel</div>
+                        <div class="book-chapters">3 capítulos</div>
+                        <span class="book-badge coming">Em breve</span>
+                    </div>
+                    <div class="book-card coming-soon">
+                        <div class="book-icon">📖</div>
+                        <div class="book-name">Amós</div>
+                        <div class="book-chapters">9 capítulos</div>
+                        <span class="book-badge coming">Em breve</span>
+                    </div>
+                    <div class="book-card coming-soon">
+                        <div class="book-icon">📖</div>
+                        <div class="book-name">Obadias</div>
+                        <div class="book-chapters">1 capítulo</div>
+                        <span class="book-badge coming">Em breve</span>
+                    </div>
+                    <div class="book-card coming-soon">
+                        <div class="book-icon">📖</div>
+                        <div class="book-name">Jonas</div>
+                        <div class="book-chapters">4 capítulos</div>
+                        <span class="book-badge coming">Em breve</span>
+                    </div>
+                    <div class="book-card coming-soon">
+                        <div class="book-icon">📖</div>
+                        <div class="book-name">Miqueias</div>
+                        <div class="book-chapters">7 capítulos</div>
+                        <span class="book-badge coming">Em breve</span>
+                    </div>
+                    <div class="book-card coming-soon">
+                        <div class="book-icon">📖</div>
+                        <div class="book-name">Naum</div>
+                        <div class="book-chapters">3 capítulos</div>
+                        <span class="book-badge coming">Em breve</span>
+                    </div>
+                    <div class="book-card coming-soon">
+                        <div class="book-icon">📖</div>
+                        <div class="book-name">Habacuque</div>
+                        <div class="book-chapters">3 capítulos</div>
+                        <span class="book-badge coming">Em breve</span>
+                    </div>
+                    <div class="book-card coming-soon">
+                        <div class="book-icon">📖</div>
+                        <div class="book-name">Sofonias</div>
+                        <div class="book-chapters">3 capítulos</div>
+                        <span class="book-badge coming">Em breve</span>
+                    </div>
+                    <div class="book-card coming-soon">
+                        <div class="book-icon">📖</div>
+                        <div class="book-name">Ageu</div>
+                        <div class="book-chapters">2 capítulos</div>
+                        <span class="book-badge coming">Em breve</span>
+                    </div>
+                    <div class="book-card coming-soon">
+                        <div class="book-icon">📖</div>
+                        <div class="book-name">Zacarias</div>
+                        <div class="book-chapters">14 capítulos</div>
+                        <span class="book-badge coming">Em breve</span>
+                    </div>
+                    <div class="book-card coming-soon">
+                        <div class="book-icon">📖</div>
+                        <div class="book-name">Malaquias</div>
+                        <div class="book-chapters">4 capítulos</div>
+                        <span class="book-badge coming">Em breve</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- NOVO TESTAMENTO -->
+        <section class="testament">
+            <div class="testament-header">
+                <div class="testament-icon nt">✝️</div>
+                <h2 class="testament-title nt">Novo Testamento</h2>
+            </div>
+
+            <!-- Evangelhos -->
+            <div class="category">
+                <h3 class="category-title">Evangelhos</h3>
+                <div class="books-grid">
+                    <div class="book-card coming-soon">
+                        <div class="book-icon">📖</div>
+                        <div class="book-name">Mateus</div>
+                        <div class="book-chapters">28 capítulos</div>
+                        <span class="book-badge coming">Em breve</span>
+                    </div>
+                    <div class="book-card coming-soon">
+                        <div class="book-icon">📖</div>
+                        <div class="book-name">Marcos</div>
+                        <div class="book-chapters">16 capítulos</div>
+                        <span class="book-badge coming">Em breve</span>
+                    </div>
+                    <div class="book-card coming-soon">
+                        <div class="book-icon">📖</div>
+                        <div class="book-name">Lucas</div>
+                        <div class="book-chapters">24 capítulos</div>
+                        <span class="book-badge coming">Em breve</span>
+                    </div>
+                    <div class="book-card coming-soon">
+                        <div class="book-icon">📖</div>
+                        <div class="book-name">João</div>
+                        <div class="book-chapters">21 capítulos</div>
+                        <span class="book-badge coming">Em breve</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- História -->
+            <div class="category">
+                <h3 class="category-title">História da Igreja</h3>
+                <div class="books-grid">
+                    <div class="book-card coming-soon">
+                        <div class="book-icon">📖</div>
+                        <div class="book-name">Atos</div>
+                        <div class="book-chapters">28 capítulos</div>
+                        <span class="book-badge coming">Em breve</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Cartas Paulinas -->
+            <div class="category">
+                <h3 class="category-title">Cartas de Paulo</h3>
+                <div class="books-grid">
+                    <div class="book-card coming-soon">
+                        <div class="book-icon">📖</div>
+                        <div class="book-name">Romanos</div>
+                        <div class="book-chapters">16 capítulos</div>
+                        <span class="book-badge coming">Em breve</span>
+                    </div>
+                    <div class="book-card coming-soon">
+                        <div class="book-icon">📖</div>
+                        <div class="book-name">1 Coríntios</div>
+                        <div class="book-chapters">16 capítulos</div>
+                        <span class="book-badge coming">Em breve</span>
+                    </div>
+                    <div class="book-card coming-soon">
+                        <div class="book-icon">📖</div>
+                        <div class="book-name">2 Coríntios</div>
+                        <div class="book-chapters">13 capítulos</div>
+                        <span class="book-badge coming">Em breve</span>
+                    </div>
+                    <div class="book-card coming-soon">
+                        <div class="book-icon">📖</div>
+                        <div class="book-name">Gálatas</div>
+                        <div class="book-chapters">6 capítulos</div>
+                        <span class="book-badge coming">Em breve</span>
+                    </div>
+                    <div class="book-card coming-soon">
+                        <div class="book-icon">📖</div>
+                        <div class="book-name">Efésios</div>
+                        <div class="book-chapters">6 capítulos</div>
+                        <span class="book-badge coming">Em breve</span>
+                    </div>
+                    <div class="book-card coming-soon">
+                        <div class="book-icon">📖</div>
+                        <div class="book-name">Filipenses</div>
+                        <div class="book-chapters">4 capítulos</div>
+                        <span class="book-badge coming">Em breve</span>
+                    </div>
+                    <div class="book-card coming-soon">
+                        <div class="book-icon">📖</div>
+                        <div class="book-name">Colossenses</div>
+                        <div class="book-chapters">4 capítulos</div>
+                        <span class="book-badge coming">Em breve</span>
+                    </div>
+                    <div class="book-card coming-soon">
+                        <div class="book-icon">📖</div>
+                        <div class="book-name">1 Tessalonicenses</div>
+                        <div class="book-chapters">5 capítulos</div>
+                        <span class="book-badge coming">Em breve</span>
+                    </div>
+                    <div class="book-card coming-soon">
+                        <div class="book-icon">📖</div>
+                        <div class="book-name">2 Tessalonicenses</div>
+                        <div class="book-chapters">3 capítulos</div>
+                        <span class="book-badge coming">Em breve</span>
+                    </div>
+                    <div class="book-card coming-soon">
+                        <div class="book-icon">📖</div>
+                        <div class="book-name">1 Timóteo</div>
+                        <div class="book-chapters">6 capítulos</div>
+                        <span class="book-badge coming">Em breve</span>
+                    </div>
+                    <div class="book-card coming-soon">
+                        <div class="book-icon">📖</div>
+                        <div class="book-name">2 Timóteo</div>
+                        <div class="book-chapters">4 capítulos</div>
+                        <span class="book-badge coming">Em breve</span>
+                    </div>
+                    <div class="book-card coming-soon">
+                        <div class="book-icon">📖</div>
+                        <div class="book-name">Tito</div>
+                        <div class="book-chapters">3 capítulos</div>
+                        <span class="book-badge coming">Em breve</span>
+                    </div>
+                    <div class="book-card coming-soon">
+                        <div class="book-icon">📖</div>
+                        <div class="book-name">Filemom</div>
+                        <div class="book-chapters">1 capítulo</div>
+                        <span class="book-badge coming">Em breve</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Cartas Gerais -->
+            <div class="category">
+                <h3 class="category-title">Cartas Gerais</h3>
+                <div class="books-grid">
+                    <div class="book-card coming-soon">
+                        <div class="book-icon">📖</div>
+                        <div class="book-name">Hebreus</div>
+                        <div class="book-chapters">13 capítulos</div>
+                        <span class="book-badge coming">Em breve</span>
+                    </div>
+                    <div class="book-card coming-soon">
+                        <div class="book-icon">📖</div>
+                        <div class="book-name">Tiago</div>
+                        <div class="book-chapters">5 capítulos</div>
+                        <span class="book-badge coming">Em breve</span>
+                    </div>
+                    <div class="book-card coming-soon">
+                        <div class="book-icon">📖</div>
+                        <div class="book-name">1 Pedro</div>
+                        <div class="book-chapters">5 capítulos</div>
+                        <span class="book-badge coming">Em breve</span>
+                    </div>
+                    <div class="book-card coming-soon">
+                        <div class="book-icon">📖</div>
+                        <div class="book-name">2 Pedro</div>
+                        <div class="book-chapters">3 capítulos</div>
+                        <span class="book-badge coming">Em breve</span>
+                    </div>
+                    <div class="book-card coming-soon">
+                        <div class="book-icon">📖</div>
+                        <div class="book-name">1 João</div>
+                        <div class="book-chapters">5 capítulos</div>
+                        <span class="book-badge coming">Em breve</span>
+                    </div>
+                    <div class="book-card coming-soon">
+                        <div class="book-icon">📖</div>
+                        <div class="book-name">2 João</div>
+                        <div class="book-chapters">1 capítulo</div>
+                        <span class="book-badge coming">Em breve</span>
+                    </div>
+                    <div class="book-card coming-soon">
+                        <div class="book-icon">📖</div>
+                        <div class="book-name">3 João</div>
+                        <div class="book-chapters">1 capítulo</div>
+                        <span class="book-badge coming">Em breve</span>
+                    </div>
+                    <div class="book-card coming-soon">
+                        <div class="book-icon">📖</div>
+                        <div class="book-name">Judas</div>
+                        <div class="book-chapters">1 capítulo</div>
+                        <span class="book-badge coming">Em breve</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Profecia -->
+            <div class="category">
+                <h3 class="category-title">Profecia</h3>
+                <div class="books-grid">
+                    <div class="book-card coming-soon">
+                        <div class="book-icon">📖</div>
+                        <div class="book-name">Apocalipse</div>
+                        <div class="book-chapters">22 capítulos</div>
+                        <span class="book-badge coming">Em breve</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p class="footer-text">Baseado na Nova Almeida Atualizada (NAA)</p>
+        <a href="https://deepmind.google/" target="_blank" class="credit-link">
+            <div class="google-logo"></div>
+            Criado com ♥ usando Google Antigravity
+        </a>
+    </footer>
+
+</body>
+
+</html>

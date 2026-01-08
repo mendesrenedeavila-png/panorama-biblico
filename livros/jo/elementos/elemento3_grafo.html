@@ -1,0 +1,1323 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Grafo das Relações – Panorama de Jó</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@600;700&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0a0e17;
+            --bg-secondary: #111827;
+            --bg-card: #1a1f2e;
+            --bg-card-hover: #252b3d;
+            --accent-gold: #d4a853;
+            --accent-gold-light: #f5d98a;
+            --accent-blue: #60a5fa;
+            --accent-purple: #a78bfa;
+            --accent-emerald: #34d399;
+            --accent-rose: #fb7185;
+            --accent-orange: #fb923c;
+            --accent-cyan: #22d3ee;
+            --text-primary: #f9fafb;
+            --text-secondary: #9ca3af;
+            --text-muted: #6b7280;
+            --border-subtle: rgba(255, 255, 255, 0.08);
+            --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+            /* Character colors */
+            --color-jo: #60a5fa;
+            --color-elifaz: #fb923c;
+            --color-bildade: #a78bfa;
+            --color-zofar: #fb7185;
+            --color-eliu: #22d3ee;
+            --color-deus: #34d399;
+            --color-satanas: #ef4444;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Background */
+        .bg-pattern {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background:
+                radial-gradient(circle at 30% 30%, rgba(167, 139, 250, 0.08) 0%, transparent 50%),
+                radial-gradient(circle at 70% 70%, rgba(96, 165, 250, 0.06) 0%, transparent 50%);
+        }
+
+        /* Header */
+        header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            text-align: center;
+            padding: 20px;
+            background: linear-gradient(to bottom, var(--bg-primary) 0%, var(--bg-primary) 60%, transparent 100%);
+            z-index: 100;
+            pointer-events: none;
+        }
+
+        header>* {
+            pointer-events: auto;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(167, 139, 250, 0.15);
+            color: var(--accent-purple);
+            padding: 6px 14px;
+            border-radius: 100px;
+            font-size: 11px;
+            font-weight: 500;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            margin-bottom: 12px;
+            border: 1px solid rgba(167, 139, 250, 0.2);
+        }
+
+        h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(1.5rem, 3vw, 2.2rem);
+            font-weight: 700;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, var(--text-primary) 0%, var(--accent-purple) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        /* Graph container */
+        #graph-container {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+
+        #graph {
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Node styles */
+        .node {
+            cursor: grab;
+            transition: filter 0.2s ease;
+        }
+
+        .node:active {
+            cursor: grabbing;
+        }
+
+        .node-circle {
+            stroke-width: 3;
+            transition: all 0.2s ease;
+        }
+
+        .node:hover .node-circle {
+            stroke-width: 5;
+            filter: drop-shadow(0 0 20px currentColor);
+        }
+
+        .node-label {
+            font-family: 'Inter', sans-serif;
+            font-size: 12px;
+            font-weight: 600;
+            fill: var(--text-primary);
+            pointer-events: none;
+            text-anchor: middle;
+        }
+
+        .node-sublabel {
+            font-family: 'Inter', sans-serif;
+            font-size: 9px;
+            font-weight: 400;
+            fill: var(--text-secondary);
+            pointer-events: none;
+            text-anchor: middle;
+        }
+
+        /* Edge styles */
+        .edge {
+            stroke-linecap: round;
+            transition: all 0.3s ease;
+            filter: drop-shadow(0 0 2px currentColor);
+        }
+
+        .edge-strong {
+            filter: drop-shadow(0 0 6px currentColor);
+        }
+
+        .edge-label {
+            font-family: 'Inter', sans-serif;
+            font-size: 9px;
+            fill: var(--text-muted);
+            pointer-events: none;
+        }
+
+        /* Dimmed state */
+        .dimmed {
+            opacity: 0.1 !important;
+        }
+
+        .highlighted {
+            opacity: 1 !important;
+        }
+
+        /* Side panel */
+        .side-panel {
+            position: fixed;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: 20px;
+            padding: 24px;
+            width: 280px;
+            max-height: 80vh;
+            overflow-y: auto;
+            z-index: 200;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .panel-title {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            color: var(--text-muted);
+            margin-bottom: 16px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 0;
+            border-bottom: 1px solid var(--border-subtle);
+            cursor: pointer;
+            transition: var(--transition-smooth);
+        }
+
+        .legend-item:last-child {
+            border-bottom: none;
+        }
+
+        .legend-item:hover {
+            padding-left: 8px;
+        }
+
+        .legend-item.active {
+            background: rgba(255, 255, 255, 0.05);
+            margin: 0 -12px;
+            padding: 10px 12px;
+            border-radius: 8px;
+        }
+
+        .legend-dot {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .legend-info {
+            flex: 1;
+        }
+
+        .legend-name {
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        .legend-desc {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+        }
+
+        /* Info card */
+        .info-card {
+            margin-top: 20px;
+            padding: 16px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 12px;
+            border-left: 3px solid var(--accent-purple);
+            display: none;
+        }
+
+        .info-card.visible {
+            display: block;
+        }
+
+        .info-card-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+        }
+
+        .info-card-content {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        .info-card-stat {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid var(--border-subtle);
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 1.2rem;
+            font-weight: 700;
+        }
+
+        .stat-label {
+            font-size: 0.65rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+        }
+
+        /* Relationship types legend */
+        .edge-legend {
+            margin-top: 20px;
+            padding-top: 16px;
+            border-top: 1px solid var(--border-subtle);
+        }
+
+        .edge-type {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 8px 0;
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        .edge-sample {
+            width: 30px;
+            height: 4px;
+            border-radius: 2px;
+        }
+
+        /* Controls */
+        .controls {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+            z-index: 200;
+        }
+
+        .control-btn {
+            padding: 10px 20px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: 100px;
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .control-btn:hover {
+            background: var(--bg-card-hover);
+            color: var(--text-primary);
+        }
+
+        .control-btn.active {
+            background: var(--accent-purple);
+            color: var(--bg-primary);
+            border-color: transparent;
+        }
+
+        /* Style selector */
+        .style-selector {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 16px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: 100px;
+        }
+
+        .style-selector label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            white-space: nowrap;
+        }
+
+        .style-select {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-subtle);
+            border-radius: 8px;
+            padding: 6px 12px;
+            color: var(--text-primary);
+            font-size: 0.8rem;
+            cursor: pointer;
+            outline: none;
+            transition: var(--transition-smooth);
+        }
+
+        .style-select:hover {
+            border-color: var(--accent-purple);
+        }
+
+        .style-select:focus {
+            border-color: var(--accent-purple);
+            box-shadow: 0 0 0 2px rgba(167, 139, 250, 0.2);
+        }
+
+        /* Back link */
+        .back-link {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--accent-purple);
+            text-decoration: none;
+            font-size: 0.85rem;
+            padding: 10px 20px;
+            background: var(--bg-card);
+            border-radius: 100px;
+            border: 1px solid var(--border-subtle);
+            transition: var(--transition-smooth);
+            z-index: 200;
+        }
+
+        .back-link:hover {
+            background: var(--bg-card-hover);
+        }
+
+        /* Tooltip */
+        .tooltip {
+            position: fixed;
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: 12px;
+            padding: 16px;
+            max-width: 280px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+            z-index: 1000;
+            pointer-events: none;
+            opacity: 0;
+            transform: scale(0.95);
+            transition: opacity 0.15s, transform 0.15s;
+        }
+
+        .tooltip.visible {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .tooltip-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .tooltip-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.8rem;
+        }
+
+        .tooltip-name {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .tooltip-role {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .tooltip-body {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .side-panel {
+                right: 10px;
+                width: 200px;
+                padding: 16px;
+                font-size: 0.9em;
+            }
+
+            .controls {
+                bottom: 70px;
+            }
+        }
+
+        @media (max-width: 500px) {
+            .side-panel {
+                display: none;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="bg-pattern"></div>
+
+    <header>
+        <div class="badge">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="3" />
+                <circle cx="4" cy="8" r="2" />
+                <circle cx="20" cy="8" r="2" />
+                <circle cx="4" cy="16" r="2" />
+                <circle cx="20" cy="16" r="2" />
+                <line x1="6" y1="8" x2="9" y2="10" />
+                <line x1="18" y1="8" x2="15" y2="10" />
+                <line x1="6" y1="16" x2="9" y2="14" />
+                <line x1="18" y1="16" x2="15" y2="14" />
+            </svg>
+            Elemento 3 · Panorama de Jó
+        </div>
+        <h1>Grafo das Relações</h1>
+        <p class="subtitle">Visualize as conexões e interações entre os personagens do livro de Jó.</p>
+    </header>
+
+    <div id="graph-container">
+        <svg id="graph"></svg>
+    </div>
+
+    <div class="side-panel">
+        <div class="panel-title">Personagens</div>
+        <div id="legend"></div>
+
+        <div class="edge-legend">
+            <div class="panel-title">Tipos de Relação</div>
+            <div class="edge-type">
+                <div class="edge-sample"
+                    style="background: linear-gradient(90deg, var(--accent-blue), var(--accent-orange));"></div>
+                <span>Diálogo direto</span>
+            </div>
+            <div class="edge-type">
+                <div class="edge-sample" style="background: var(--accent-emerald);"></div>
+                <span>Intervenção divina</span>
+            </div>
+            <div class="edge-type">
+                <div class="edge-sample" style="background: var(--accent-rose); opacity: 0.5;"></div>
+                <span>Acusação/Conflito</span>
+            </div>
+        </div>
+
+        <div class="info-card" id="info-card">
+            <div class="info-card-title" id="info-title"></div>
+            <div class="info-card-content" id="info-content"></div>
+            <div class="info-card-stat" id="info-stats"></div>
+        </div>
+    </div>
+
+    <div class="controls">
+        <div class="style-selector">
+            <label for="style-select">Estilo:</label>
+            <select id="style-select" class="style-select">
+                <option value="force">Força (animado)</option>
+                <option value="circular">Circular</option>
+                <option value="hierarchy">Hierárquico</option>
+                <option value="radial">Radial (Jó centro)</option>
+                <option value="grid">Grade</option>
+            </select>
+        </div>
+        <button class="control-btn" id="btn-reset">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+                <path d="M3 3v5h5" />
+            </svg>
+            Reiniciar
+        </button>
+        <button class="control-btn" id="btn-physics">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10" />
+                <circle cx="12" cy="12" r="3" />
+            </svg>
+            Física: ON
+        </button>
+    </div>
+
+    <a href="../index.html" class="back-link">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M19 12H5M12 19l-7-7 7-7" />
+        </svg>
+        Voltar
+    </a>
+    <a href="https://deepmind.google/" target="_blank"
+        style="display: inline-flex; align-items: center; gap: 8px; color: rgba(255,255,255,0.5); text-decoration: none; font-size: 0.75rem; margin-top: 12px; justify-content: center;">
+        <span
+            style="width: 18px; height: 18px; border-radius: 4px; background: linear-gradient(135deg, #4285f4, #34a853, #fbbc05, #ea4335);"></span>
+        Criado com ♥ usando Google Antigravity
+    </a>
+
+    <div class="tooltip" id="tooltip"></div>
+
+    <script>
+        // Character data
+        const characters = [
+            {
+                id: 'jo',
+                name: 'Jó',
+                color: 'var(--color-jo)',
+                role: 'Protagonista',
+                description: 'Homem íntegro e reto, temia a Deus. Perdeu tudo e questionou seu sofrimento.',
+                chapters: 23,
+                radius: 45,
+                image: '../imagens/JO.png'
+            },
+            {
+                id: 'deus',
+                name: 'Deus',
+                color: 'var(--color-deus)',
+                role: 'O Todo-Poderoso',
+                description: 'Responde a Jó do meio do redemoinho, revelando Sua sabedoria e poder sobre a criação.',
+                chapters: 6,
+                radius: 40,
+                image: '../imagens/DEUS.png'
+            },
+            {
+                id: 'elifaz',
+                name: 'Elifaz',
+                color: 'var(--color-elifaz)',
+                role: 'Amigo de Jó',
+                description: 'O temanita. Primeiro dos três amigos a falar. Defende a teologia da retribuição.',
+                chapters: 4,
+                radius: 32,
+                image: '../imagens/ELIFAZ.png'
+            },
+            {
+                id: 'bildade',
+                name: 'Bildade',
+                color: 'var(--color-bildade)',
+                role: 'Amigo de Jó',
+                description: 'O suíta. Argumenta que Deus não perverte a justiça.',
+                chapters: 3,
+                radius: 30,
+                image: '../imagens/BILDADE.png'
+            },
+            {
+                id: 'zofar',
+                name: 'Zofar',
+                color: 'var(--color-zofar)',
+                role: 'Amigo de Jó',
+                description: 'O naamatita. O mais severo dos amigos, acusa Jó de falta de sabedoria.',
+                chapters: 2,
+                radius: 28,
+                image: '../imagens/ZOFAR.png'
+            },
+            {
+                id: 'eliu',
+                name: 'Eliú',
+                color: 'var(--color-eliu)',
+                role: 'Jovem sábio',
+                description: 'Filho de Baraquel. Intervém após os três amigos, propondo que o sofrimento é disciplina.',
+                chapters: 6,
+                radius: 35,
+                image: '../imagens/ELIU.png'
+            },
+            {
+                id: 'satanas',
+                name: 'Satanás',
+                color: 'var(--color-satanas)',
+                role: 'O Acusador',
+                description: 'Desafia a integridade de Jó diante de Deus no tribunal celestial.',
+                chapters: 2,
+                radius: 28,
+                image: '../imagens/SATANAS.png'
+            }
+        ];
+
+        // Relationship data
+        const relationships = [
+            // Job's dialogues with friends
+            { source: 'jo', target: 'elifaz', type: 'dialogue', weight: 8, label: '3 ciclos' },
+            { source: 'jo', target: 'bildade', type: 'dialogue', weight: 6, label: '3 ciclos' },
+            { source: 'jo', target: 'zofar', type: 'dialogue', weight: 4, label: '2 ciclos' },
+
+            // Elihu's intervention
+            { source: 'eliu', target: 'jo', type: 'dialogue', weight: 5, label: '6 caps' },
+            { source: 'eliu', target: 'elifaz', type: 'critique', weight: 2, label: 'critica' },
+            { source: 'eliu', target: 'bildade', type: 'critique', weight: 2, label: 'critica' },
+            { source: 'eliu', target: 'zofar', type: 'critique', weight: 2, label: 'critica' },
+
+            // Divine interactions
+            { source: 'deus', target: 'jo', type: 'divine', weight: 7, label: '4 caps' },
+            { source: 'deus', target: 'satanas', type: 'divine', weight: 3, label: 'desafio' },
+            { source: 'deus', target: 'elifaz', type: 'divine', weight: 2, label: 'repreensão' },
+
+            // Satan's accusation
+            { source: 'satanas', target: 'jo', type: 'accusation', weight: 4, label: 'acusa' },
+
+            // Friends among themselves (implicit alliance)
+            { source: 'elifaz', target: 'bildade', type: 'alliance', weight: 2, label: '' },
+            { source: 'bildade', target: 'zofar', type: 'alliance', weight: 2, label: '' },
+            { source: 'elifaz', target: 'zofar', type: 'alliance', weight: 2, label: '' }
+        ];
+
+        // SVG setup
+        const svg = document.getElementById('graph');
+        const container = document.getElementById('graph-container');
+        let width = container.clientWidth;
+        let height = container.clientHeight;
+        svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
+
+        // Physics simulation state
+        let physicsEnabled = true;
+        let simulation;
+
+        // Initialize node positions (circular layout initially)
+        const centerX = width / 2;
+        const centerY = height / 2;
+        const layoutRadius = Math.min(width, height) * 0.3;
+
+        characters.forEach((char, i) => {
+            const angle = (i / characters.length) * Math.PI * 2 - Math.PI / 2;
+            char.x = centerX + Math.cos(angle) * layoutRadius;
+            char.y = centerY + Math.sin(angle) * layoutRadius;
+            char.vx = 0;
+            char.vy = 0;
+        });
+
+        // Create character lookup
+        const charMap = {};
+        characters.forEach(c => charMap[c.id] = c);
+
+        // Get edge color based on type - increased opacity for better visibility
+        function getEdgeColor(type) {
+            switch (type) {
+                case 'dialogue': return 'rgba(96, 165, 250, 0.85)';
+                case 'divine': return 'rgba(52, 211, 153, 0.9)';
+                case 'accusation': return 'rgba(251, 113, 133, 0.8)';
+                case 'critique': return 'rgba(251, 146, 60, 0.7)';
+                case 'alliance': return 'rgba(255, 255, 255, 0.25)';
+                default: return 'rgba(255, 255, 255, 0.4)';
+            }
+        }
+
+        // Create edges group
+        const edgesGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+        edgesGroup.id = 'edges';
+        svg.appendChild(edgesGroup);
+
+        // Create nodes group
+        const nodesGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+        nodesGroup.id = 'nodes';
+        svg.appendChild(nodesGroup);
+
+        // Render edges with improved visibility
+        relationships.forEach((rel, i) => {
+            const edge = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+            edge.classList.add('edge');
+            // Add strong class for high-weight relationships
+            if (rel.weight >= 6) edge.classList.add('edge-strong');
+            edge.dataset.source = rel.source;
+            edge.dataset.target = rel.target;
+            edge.dataset.index = i;
+            edge.dataset.weight = rel.weight;
+            edge.style.stroke = getEdgeColor(rel.type);
+            // Increased multiplier: weight 8 = 20px, weight 2 = 5px
+            edge.style.strokeWidth = Math.max(3, rel.weight * 2.5) + 'px';
+            edgesGroup.appendChild(edge);
+        });
+
+        // Render nodes
+        characters.forEach((char, index) => {
+            const group = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+            group.classList.add('node');
+            group.dataset.id = char.id;
+
+            // Outer glow
+            const glow = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+            glow.classList.add('node-glow');
+            glow.setAttribute('r', char.radius + 8);
+            glow.style.fill = char.color;
+            glow.style.opacity = '0.15';
+            group.appendChild(glow);
+
+            // Main circle (border)
+            const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+            circle.classList.add('node-circle');
+            circle.setAttribute('r', char.radius);
+            circle.style.fill = 'var(--bg-primary)';
+            circle.style.stroke = char.color;
+            group.appendChild(circle);
+
+            // If character has image, use it; otherwise use initial
+            if (char.image) {
+                // Create clipPath for circular image
+                const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+                const clipPath = document.createElementNS('http://www.w3.org/2000/svg', 'clipPath');
+                clipPath.id = `clip-${char.id}`;
+                const clipCircle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                clipCircle.setAttribute('r', char.radius - 2);
+                clipPath.appendChild(clipCircle);
+                defs.appendChild(clipPath);
+                group.appendChild(defs);
+
+                // Character image
+                const img = document.createElementNS('http://www.w3.org/2000/svg', 'image');
+                img.setAttributeNS('http://www.w3.org/1999/xlink', 'href', char.image);
+                img.setAttribute('x', -char.radius + 2);
+                img.setAttribute('y', -char.radius + 2);
+                img.setAttribute('width', (char.radius - 2) * 2);
+                img.setAttribute('height', (char.radius - 2) * 2);
+                img.setAttribute('clip-path', `url(#clip-${char.id})`);
+                img.style.pointerEvents = 'none';
+                group.appendChild(img);
+            } else {
+                // Icon/initial for characters without images
+                const initial = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                initial.classList.add('node-label');
+                initial.setAttribute('dy', '0.35em');
+                initial.style.fill = char.color;
+                initial.style.fontSize = `${char.radius * 0.5}px`;
+                initial.textContent = char.name.charAt(0);
+                group.appendChild(initial);
+            }
+
+            // Name label below
+            const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            label.classList.add('node-sublabel');
+            label.setAttribute('dy', char.radius + 18);
+            label.textContent = char.name;
+            group.appendChild(label);
+
+            nodesGroup.appendChild(group);
+
+            // Store DOM reference
+            char.element = group;
+        });
+
+        // Update positions
+        function updatePositions() {
+            // Update nodes
+            characters.forEach(char => {
+                char.element.setAttribute('transform', `translate(${char.x}, ${char.y})`);
+            });
+
+            // Update edges
+            const edges = edgesGroup.querySelectorAll('.edge');
+            edges.forEach(edge => {
+                const source = charMap[edge.dataset.source];
+                const target = charMap[edge.dataset.target];
+                edge.setAttribute('x1', source.x);
+                edge.setAttribute('y1', source.y);
+                edge.setAttribute('x2', target.x);
+                edge.setAttribute('y2', target.y);
+            });
+        }
+
+        // Simple force simulation
+        function simulate() {
+            if (!physicsEnabled) {
+                requestAnimationFrame(simulate);
+                return;
+            }
+
+            const alpha = 0.1;
+            const repulsion = 8000;
+            const attraction = 0.005;
+            const centerPull = 0.01;
+            const damping = 0.85;
+
+            // Reset forces
+            characters.forEach(c => {
+                c.fx = 0;
+                c.fy = 0;
+            });
+
+            // Repulsion between all nodes
+            for (let i = 0; i < characters.length; i++) {
+                for (let j = i + 1; j < characters.length; j++) {
+                    const a = characters[i];
+                    const b = characters[j];
+                    const dx = b.x - a.x;
+                    const dy = b.y - a.y;
+                    const dist = Math.sqrt(dx * dx + dy * dy) || 1;
+                    const force = repulsion / (dist * dist);
+                    const fx = (dx / dist) * force;
+                    const fy = (dy / dist) * force;
+                    a.fx -= fx;
+                    a.fy -= fy;
+                    b.fx += fx;
+                    b.fy += fy;
+                }
+            }
+
+            // Attraction along edges
+            relationships.forEach(rel => {
+                const source = charMap[rel.source];
+                const target = charMap[rel.target];
+                const dx = target.x - source.x;
+                const dy = target.y - source.y;
+                const dist = Math.sqrt(dx * dx + dy * dy) || 1;
+                const force = (dist - 200) * attraction * rel.weight;
+                const fx = (dx / dist) * force;
+                const fy = (dy / dist) * force;
+                source.fx += fx;
+                source.fy += fy;
+                target.fx -= fx;
+                target.fy -= fy;
+            });
+
+            // Center pull
+            characters.forEach(c => {
+                c.fx += (centerX - c.x) * centerPull;
+                c.fy += (centerY - c.y) * centerPull;
+            });
+
+            // Apply forces
+            characters.forEach(c => {
+                c.vx = (c.vx + c.fx * alpha) * damping;
+                c.vy = (c.vy + c.fy * alpha) * damping;
+                c.x += c.vx;
+                c.y += c.vy;
+
+                // Boundary constraints
+                const margin = c.radius + 20;
+                c.x = Math.max(margin, Math.min(width - margin, c.x));
+                c.y = Math.max(margin + 80, Math.min(height - margin, c.y));
+            });
+
+            updatePositions();
+            requestAnimationFrame(simulate);
+        }
+
+        // Start simulation
+        simulate();
+
+        // Drag functionality
+        let draggedNode = null;
+        let dragOffset = { x: 0, y: 0 };
+
+        nodesGroup.addEventListener('mousedown', (e) => {
+            const node = e.target.closest('.node');
+            if (node) {
+                draggedNode = charMap[node.dataset.id];
+                const rect = svg.getBoundingClientRect();
+                const scaleX = width / rect.width;
+                const scaleY = height / rect.height;
+                dragOffset.x = draggedNode.x - (e.clientX - rect.left) * scaleX;
+                dragOffset.y = draggedNode.y - (e.clientY - rect.top) * scaleY;
+                node.style.cursor = 'grabbing';
+            }
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (draggedNode) {
+                const rect = svg.getBoundingClientRect();
+                const scaleX = width / rect.width;
+                const scaleY = height / rect.height;
+                draggedNode.x = (e.clientX - rect.left) * scaleX + dragOffset.x;
+                draggedNode.y = (e.clientY - rect.top) * scaleY + dragOffset.y;
+                draggedNode.vx = 0;
+                draggedNode.vy = 0;
+                if (!physicsEnabled) updatePositions();
+            }
+        });
+
+        document.addEventListener('mouseup', () => {
+            if (draggedNode) {
+                draggedNode.element.style.cursor = 'grab';
+                draggedNode = null;
+            }
+        });
+
+        // Hover highlight
+        const tooltip = document.getElementById('tooltip');
+
+        nodesGroup.addEventListener('mouseenter', (e) => {
+            const node = e.target.closest('.node');
+            if (node && !draggedNode) {
+                const char = charMap[node.dataset.id];
+                highlightConnections(char.id);
+                showTooltip(char, e);
+                showInfoCard(char);
+            }
+        }, true);
+
+        nodesGroup.addEventListener('mouseleave', (e) => {
+            const node = e.target.closest('.node');
+            if (node && !draggedNode) {
+                clearHighlight();
+                hideTooltip();
+            }
+        }, true);
+
+        function highlightConnections(charId) {
+            // Dim all
+            document.querySelectorAll('.node, .edge').forEach(el => el.classList.add('dimmed'));
+
+            // Highlight connected
+            const connected = new Set([charId]);
+            relationships.forEach(rel => {
+                if (rel.source === charId || rel.target === charId) {
+                    connected.add(rel.source);
+                    connected.add(rel.target);
+                }
+            });
+
+            connected.forEach(id => {
+                const node = document.querySelector(`.node[data-id="${id}"]`);
+                if (node) {
+                    node.classList.remove('dimmed');
+                    node.classList.add('highlighted');
+                }
+            });
+
+            document.querySelectorAll('.edge').forEach(edge => {
+                if (edge.dataset.source === charId || edge.dataset.target === charId) {
+                    edge.classList.remove('dimmed');
+                    edge.classList.add('highlighted');
+                    edge.style.strokeWidth = parseFloat(edge.style.strokeWidth) * 1.5 + 'px';
+                }
+            });
+        }
+
+        function clearHighlight() {
+            document.querySelectorAll('.node, .edge').forEach(el => {
+                el.classList.remove('dimmed', 'highlighted');
+            });
+            document.querySelectorAll('.edge').forEach((edge, i) => {
+                edge.style.strokeWidth = relationships[i].weight * 0.8 + 'px';
+            });
+        }
+
+        function showTooltip(char, e) {
+            tooltip.innerHTML = `
+        <div class="tooltip-header">
+          <div class="tooltip-icon" style="background: ${char.color}; color: var(--bg-primary);">
+            ${char.name.charAt(0)}
+          </div>
+          <div>
+            <div class="tooltip-name">${char.name}</div>
+            <div class="tooltip-role">${char.role}</div>
+          </div>
+        </div>
+        <div class="tooltip-body">${char.description}</div>
+      `;
+
+            positionTooltip(e);
+            tooltip.classList.add('visible');
+        }
+
+        function positionTooltip(e) {
+            let left = e.clientX + 15;
+            let top = e.clientY + 15;
+
+            if (left + 300 > window.innerWidth) left = e.clientX - 300;
+            if (top + 150 > window.innerHeight) top = e.clientY - 150;
+
+            tooltip.style.left = left + 'px';
+            tooltip.style.top = top + 'px';
+        }
+
+        function hideTooltip() {
+            tooltip.classList.remove('visible');
+        }
+
+        document.addEventListener('mousemove', (e) => {
+            if (tooltip.classList.contains('visible')) {
+                positionTooltip(e);
+            }
+        });
+
+        // Info card
+        function showInfoCard(char) {
+            const card = document.getElementById('info-card');
+            document.getElementById('info-title').textContent = char.name;
+            document.getElementById('info-content').textContent = char.description;
+
+            const connections = relationships.filter(r => r.source === char.id || r.target === char.id).length;
+
+            document.getElementById('info-stats').innerHTML = `
+        <div class="stat-item">
+          <div class="stat-value" style="color: ${char.color};">${char.chapters}</div>
+          <div class="stat-label">Capítulos</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value" style="color: ${char.color};">${connections}</div>
+          <div class="stat-label">Conexões</div>
+        </div>
+      `;
+
+            card.classList.add('visible');
+            card.style.borderLeftColor = char.color;
+        }
+
+        // Legend
+        const legendContainer = document.getElementById('legend');
+        characters.forEach(char => {
+            const item = document.createElement('div');
+            item.className = 'legend-item';
+            item.dataset.id = char.id;
+            item.innerHTML = `
+        <div class="legend-dot" style="background: ${char.color};"></div>
+        <div class="legend-info">
+          <div class="legend-name">${char.name}</div>
+          <div class="legend-desc">${char.role}</div>
+        </div>
+      `;
+
+            item.addEventListener('click', () => {
+                // Scroll to node (center it)
+                const targetX = width / 2;
+                const targetY = height / 2;
+                const dx = targetX - char.x;
+                const dy = targetY - char.y;
+
+                characters.forEach(c => {
+                    c.x += dx;
+                    c.y += dy;
+                });
+
+                updatePositions();
+                highlightConnections(char.id);
+                showInfoCard(char);
+
+                // Show as active
+                document.querySelectorAll('.legend-item').forEach(i => i.classList.remove('active'));
+                item.classList.add('active');
+            });
+
+            legendContainer.appendChild(item);
+        });
+
+        // Controls
+        document.getElementById('btn-reset').addEventListener('click', () => {
+            // Reset positions to circular layout
+            characters.forEach((char, i) => {
+                const angle = (i / characters.length) * Math.PI * 2 - Math.PI / 2;
+                char.x = centerX + Math.cos(angle) * layoutRadius;
+                char.y = centerY + Math.sin(angle) * layoutRadius;
+                char.vx = 0;
+                char.vy = 0;
+            });
+            clearHighlight();
+            document.getElementById('info-card').classList.remove('visible');
+            document.querySelectorAll('.legend-item').forEach(i => i.classList.remove('active'));
+            updatePositions();
+        });
+
+        document.getElementById('btn-physics').addEventListener('click', function () {
+            physicsEnabled = !physicsEnabled;
+            this.classList.toggle('active', physicsEnabled);
+            this.innerHTML = `
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/>
+          <circle cx="12" cy="12" r="3"/>
+        </svg>
+        Física: ${physicsEnabled ? 'ON' : 'OFF'}
+      `;
+        });
+
+        // Style selector - 5 different layouts
+        const styleSelect = document.getElementById('style-select');
+        let currentStyle = 'force';
+
+        // Layout functions
+        function applyCircularLayout() {
+            const radius = Math.min(width, height) * 0.32;
+            characters.forEach((char, i) => {
+                const angle = (i / characters.length) * Math.PI * 2 - Math.PI / 2;
+                char.x = centerX + Math.cos(angle) * radius;
+                char.y = centerY + Math.sin(angle) * radius;
+                char.vx = 0;
+                char.vy = 0;
+            });
+        }
+
+        function applyHierarchyLayout() {
+            // Deus at top, Job below, friends below Job, Elihu and Satan on sides
+            const positions = {
+                'deus': { x: centerX, y: height * 0.18 },
+                'jo': { x: centerX, y: height * 0.42 },
+                'elifaz': { x: centerX - 150, y: height * 0.65 },
+                'bildade': { x: centerX, y: height * 0.65 },
+                'zofar': { x: centerX + 150, y: height * 0.65 },
+                'eliu': { x: centerX - 250, y: height * 0.42 },
+                'satanas': { x: centerX + 250, y: height * 0.25 }
+            };
+            characters.forEach(char => {
+                const pos = positions[char.id];
+                if (pos) {
+                    char.x = pos.x;
+                    char.y = pos.y;
+                }
+                char.vx = 0;
+                char.vy = 0;
+            });
+        }
+
+        function applyRadialLayout() {
+            // Job at center, others around him at different distances based on relationship
+            const jobChar = charMap['jo'];
+            jobChar.x = centerX;
+            jobChar.y = centerY;
+
+            // Inner ring: close relationships
+            const innerRing = ['deus', 'elifaz', 'bildade', 'zofar'];
+            const innerRadius = Math.min(width, height) * 0.22;
+            innerRing.forEach((id, i) => {
+                const char = charMap[id];
+                const angle = (i / innerRing.length) * Math.PI * 2 - Math.PI / 2;
+                char.x = centerX + Math.cos(angle) * innerRadius;
+                char.y = centerY + Math.sin(angle) * innerRadius;
+                char.vx = 0;
+                char.vy = 0;
+            });
+
+            // Outer ring
+            const outerRing = ['eliu', 'satanas'];
+            const outerRadius = Math.min(width, height) * 0.38;
+            outerRing.forEach((id, i) => {
+                const char = charMap[id];
+                const angle = (i / outerRing.length) * Math.PI * 2 + Math.PI / 4;
+                char.x = centerX + Math.cos(angle) * outerRadius;
+                char.y = centerY + Math.sin(angle) * outerRadius;
+                char.vx = 0;
+                char.vy = 0;
+            });
+        }
+
+        function applyGridLayout() {
+            // 3x3 grid layout
+            const gridPositions = [
+                { x: centerX - 180, y: centerY - 140 },  // Deus
+                { x: centerX, y: centerY - 140 },        // Jó
+                { x: centerX + 180, y: centerY - 140 },  // Satanás
+                { x: centerX - 180, y: centerY + 20 },   // Elifaz
+                { x: centerX, y: centerY + 20 },         // Eliú
+                { x: centerX + 180, y: centerY + 20 },   // Bildade
+                { x: centerX, y: centerY + 180 }         // Zofar
+            ];
+            const order = ['deus', 'jo', 'satanas', 'elifaz', 'eliu', 'bildade', 'zofar'];
+            order.forEach((id, i) => {
+                const char = charMap[id];
+                const pos = gridPositions[i];
+                char.x = pos.x;
+                char.y = pos.y;
+                char.vx = 0;
+                char.vy = 0;
+            });
+        }
+
+        function applyLayout(style) {
+            currentStyle = style;
+
+            switch (style) {
+                case 'force':
+                    applyCircularLayout();
+                    physicsEnabled = true;
+                    document.getElementById('btn-physics').classList.add('active');
+                    document.getElementById('btn-physics').innerHTML = `
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          <circle cx="12" cy="12" r="10"/>
+                          <circle cx="12" cy="12" r="3"/>
+                        </svg>
+                        Física: ON
+                    `;
+                    break;
+                case 'circular':
+                    physicsEnabled = false;
+                    applyCircularLayout();
+                    break;
+                case 'hierarchy':
+                    physicsEnabled = false;
+                    applyHierarchyLayout();
+                    break;
+                case 'radial':
+                    physicsEnabled = false;
+                    applyRadialLayout();
+                    break;
+                case 'grid':
+                    physicsEnabled = false;
+                    applyGridLayout();
+                    break;
+            }
+
+            if (style !== 'force') {
+                document.getElementById('btn-physics').classList.remove('active');
+                document.getElementById('btn-physics').innerHTML = `
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <circle cx="12" cy="12" r="10"/>
+                      <circle cx="12" cy="12" r="3"/>
+                    </svg>
+                    Física: OFF
+                `;
+            }
+
+            updatePositions();
+        }
+
+        styleSelect.addEventListener('change', (e) => {
+            applyLayout(e.target.value);
+        });
+
+        // Handle resize
+        window.addEventListener('resize', () => {
+            width = container.clientWidth;
+            height = container.clientHeight;
+            svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
+        });
+    </script>
+</body>
+
+</html>

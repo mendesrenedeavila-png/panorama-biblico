@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mapa da Criação – Panorama de Jó</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@600;700&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0a0e17;
+            --bg-card: #1a1f2e;
+            --accent-emerald: #34d399;
+            --accent-blue: #60a5fa;
+            --accent-gold: #d4a853;
+            --text-primary: #f9fafb;
+            --text-secondary: #9ca3af;
+            --text-muted: #6b7280;
+            --border-subtle: rgba(255, 255, 255, 0.08);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(52, 211, 153, 0.15);
+            color: var(--accent-emerald);
+            padding: 8px 16px;
+            border-radius: 100px;
+            font-size: 12px;
+            font-weight: 500;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            margin-bottom: 16px;
+            border: 1px solid rgba(52, 211, 153, 0.2);
+        }
+
+        h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(1.8rem, 4vw, 2.8rem);
+            font-weight: 700;
+            margin-bottom: 12px;
+            background: linear-gradient(135deg, var(--text-primary), var(--accent-emerald));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            font-size: 1rem;
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* VISUAL MAP CONTAINER */
+        .map-container {
+            position: relative;
+            width: 100%;
+            height: 600px;
+            border-radius: 24px;
+            overflow: hidden;
+            margin-top: 30px;
+            background:
+                /* Stars */
+                radial-gradient(2px 2px at 10% 15%, white 50%, transparent 100%),
+                radial-gradient(2px 2px at 25% 8%, white 50%, transparent 100%),
+                radial-gradient(1px 1px at 35% 12%, white 50%, transparent 100%),
+                radial-gradient(2px 2px at 50% 5%, white 50%, transparent 100%),
+                radial-gradient(1px 1px at 65% 10%, white 50%, transparent 100%),
+                radial-gradient(2px 2px at 80% 15%, white 50%, transparent 100%),
+                radial-gradient(1px 1px at 90% 8%, white 50%, transparent 100%),
+                /* Sky gradient */
+                linear-gradient(to bottom,
+                    #0a0a1a 0%,
+                    #1a1a3a 20%,
+                    #2a3a5a 40%,
+                    #4a6080 55%,
+                    #8ab4d0 70%,
+                    #c0d8e8 80%,
+                    #d4c4a0 88%,
+                    #806040 95%,
+                    #3a2820 100%);
+            border: 2px solid rgba(52, 211, 153, 0.3);
+        }
+
+        /* Map zones */
+        .zone-label {
+            position: absolute;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            opacity: 0.6;
+            font-weight: 600;
+        }
+
+        /* Creation items positioned on map */
+        .map-item {
+            position: absolute;
+            width: 70px;
+            height: 70px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            z-index: 10;
+        }
+
+        .map-item:hover {
+            transform: scale(1.2);
+            z-index: 100;
+        }
+
+        .map-item.active {
+            transform: scale(1.15);
+            z-index: 100;
+        }
+
+        .item-icon {
+            font-size: 2.5rem;
+            filter: drop-shadow(0 0 10px rgba(0, 0, 0, 0.5));
+            transition: all 0.3s;
+        }
+
+        .map-item:hover .item-icon,
+        .map-item.active .item-icon {
+            filter: drop-shadow(0 0 20px rgba(52, 211, 153, 0.8));
+        }
+
+        .item-label {
+            font-size: 0.65rem;
+            font-weight: 600;
+            text-align: center;
+            margin-top: 4px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
+            color: white;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 2px 8px;
+            border-radius: 10px;
+            white-space: nowrap;
+        }
+
+        /* Pulsing animation for active items */
+        @keyframes pulse {
+
+            0%,
+            100% {
+                box-shadow: 0 0 0 0 rgba(52, 211, 153, 0.5);
+            }
+
+            50% {
+                box-shadow: 0 0 0 15px rgba(52, 211, 153, 0);
+            }
+        }
+
+        .map-item.active::before {
+            content: '';
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        /* Detail panel */
+        .detail-panel {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            right: 20px;
+            background: rgba(10, 14, 23, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 20px;
+            border: 1px solid rgba(52, 211, 153, 0.3);
+            display: none;
+            z-index: 200;
+        }
+
+        .detail-panel.visible {
+            display: block;
+        }
+
+        .detail-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 12px;
+        }
+
+        .detail-icon {
+            font-size: 2.5rem;
+        }
+
+        .detail-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--accent-emerald);
+        }
+
+        .detail-ref {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .detail-ref a {
+            color: var(--accent-emerald);
+            text-decoration: none;
+        }
+
+        .detail-body {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .detail-desc {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        .detail-verse {
+            font-style: italic;
+            font-size: 0.9rem;
+            color: var(--text-primary);
+            padding: 12px;
+            background: rgba(52, 211, 153, 0.1);
+            border-radius: 10px;
+            border-left: 3px solid var(--accent-emerald);
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: white;
+            cursor: pointer;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .close-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Legend */
+        .map-legend {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .legend-color {
+            width: 12px;
+            height: 12px;
+            border-radius: 3px;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 30px;
+            border-top: 1px solid var(--border-subtle);
+        }
+
+        footer p {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--accent-emerald);
+            text-decoration: none;
+            font-size: 0.9rem;
+            margin-top: 16px;
+            padding: 12px 24px;
+            background: rgba(52, 211, 153, 0.1);
+            border-radius: 100px;
+            border: 1px solid rgba(52, 211, 153, 0.2);
+            transition: all 0.3s;
+        }
+
+        .back-link:hover {
+            background: rgba(52, 211, 153, 0.2);
+        }
+
+        @media (max-width: 700px) {
+            .map-container {
+                height: 500px;
+            }
+
+            .map-item {
+                width: 50px;
+                height: 50px;
+            }
+
+            .item-icon {
+                font-size: 1.8rem;
+            }
+
+            .item-label {
+                font-size: 0.55rem;
+            }
+
+            .detail-body {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <div class="badge">🌍 Elemento 7 · Panorama de Jó</div>
+            <h1>Mapa da Criação</h1>
+            <p class="subtitle">Explore os elementos da criação mencionados nos discursos de Deus (Jó 38-41),
+                posicionados em um mapa visual do cosmos.</p>
+        </header>
+
+        <div class="map-container" id="map">
+            <!-- Zone labels -->
+            <div class="zone-label" style="top: 5%; left: 50%; transform: translateX(-50%); color: #a0a0ff;">✦ Céu /
+                Cosmos ✦</div>
+            <div class="zone-label" style="top: 35%; left: 5%; color: #80c0ff;">Atmosfera</div>
+            <div class="zone-label" style="top: 70%; left: 50%; transform: translateX(-50%); color: #a0c0a0;">—
+                Superfície da Terra —</div>
+            <div class="zone-label" style="top: 92%; left: 50%; transform: translateX(-50%); color: #806040;">
+                Profundezas</div>
+
+            <!-- Creation items will be positioned here -->
+            <div id="items-container"></div>
+
+            <!-- Detail panel -->
+            <div class="detail-panel" id="detail-panel">
+                <button class="close-btn" id="close-btn">✕</button>
+                <div class="detail-header">
+                    <div class="detail-icon" id="detail-icon"></div>
+                    <div>
+                        <div class="detail-title" id="detail-title"></div>
+                        <div class="detail-ref" id="detail-ref"></div>
+                    </div>
+                </div>
+                <div class="detail-body">
+                    <div class="detail-desc" id="detail-desc"></div>
+                    <div class="detail-verse" id="detail-verse"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="map-legend">
+            <div class="legend-item">
+                <div class="legend-color" style="background: #ffd700;"></div>Cosmos / Estrelas
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #87ceeb;"></div>Atmosfera / Clima
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #90ee90;"></div>Animais
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #daa520;"></div>Terra / Fundamentos
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #4169e1;"></div>Águas / Mar
+            </div>
+        </div>
+
+        <footer>
+            <p>Clique em cada elemento para ver o versículo relacionado</p>
+            <a href="../index.html" class="back-link">← Voltar ao Panorama</a>
+            <a href="https://deepmind.google/" target="_blank"
+                style="display: inline-flex; align-items: center; gap: 8px; color: rgba(255,255,255,0.5); text-decoration: none; font-size: 0.75rem; margin-top: 12px;">
+                <span
+                    style="width: 18px; height: 18px; border-radius: 4px; background: linear-gradient(135deg, #4285f4, #34a853, #fbbc05, #ea4335);"></span>
+                Criado com ♥ usando Google Antigravity
+            </a>
+        </footer>
+    </div>
+
+    <script>
+        const getBibleLink = (ch) => `https://www.bibliaonline.com.br/naa/j%C3%B3/${ch}`;
+
+        // Creation elements with positions on the map (percentages)
+        const creationElements = [
+            {
+                icon: '⭐', title: 'Constelações', ref: 'Jó 38:31-33', chapter: 38,
+                x: 15, y: 8, zone: 'cosmos',
+                desc: 'As Plêiades, Órion e a Ursa Maior sob o domínio soberano de Deus.',
+                verse: 'Você pode atar as cadeias do Sete-Estrelas ou soltar os laços do Órion?'
+            },
+            {
+                icon: '🌙', title: 'Lua e Estrelas', ref: 'Jó 38:7', chapter: 38,
+                x: 85, y: 10, zone: 'cosmos',
+                desc: 'As estrelas da manhã que cantaram juntas na criação da terra.',
+                verse: 'Quando as estrelas da manhã juntas cantavam e todos os filhos de Deus jubilavam?'
+            },
+            {
+                icon: '🌅', title: 'Aurora', ref: 'Jó 38:12-15', chapter: 38,
+                x: 90, y: 25, zone: 'atm',
+                desc: 'O controle divino sobre a aurora que marca o início de cada dia.',
+                verse: 'Alguma vez na vida você deu ordens à alvorada ou mostrou à aurora o seu lugar?'
+            },
+            {
+                icon: '⚡', title: 'Relâmpago', ref: 'Jó 38:25-27', chapter: 38,
+                x: 30, y: 28, zone: 'atm',
+                desc: 'Deus direciona os relâmpagos e traz chuva ao deserto.',
+                verse: 'Quem abriu caminho para a tempestade e trilha para o relâmpago?'
+            },
+            {
+                icon: '❄️', title: 'Neve e Granizo', ref: 'Jó 38:22-23', chapter: 38,
+                x: 10, y: 35, zone: 'atm',
+                desc: 'Os depósitos de neve e granizo guardados por Deus para tempos de guerra.',
+                verse: 'Você já entrou nos depósitos da neve ou viu os depósitos do granizo?'
+            },
+            {
+                icon: '☁️', title: 'Nuvens e Chuva', ref: 'Jó 38:34-38', chapter: 38,
+                x: 50, y: 32, zone: 'atm',
+                desc: 'Quem pode comandar as nuvens para derramar água sobre a terra?',
+                verse: 'Você pode levantar a voz até as nuvens para que uma torrente de água o cubra?'
+            },
+            {
+                icon: '🦅', title: 'Águia', ref: 'Jó 39:27-30', chapter: 39,
+                x: 75, y: 40, zone: 'animal',
+                desc: 'A águia que voa alto e constrói seu ninho nas alturas por ordem de Deus.',
+                verse: 'É por sua ordem que a águia se levanta e faz o seu ninho nas alturas?'
+            },
+            {
+                icon: '🌍', title: 'Fundamentos', ref: 'Jó 38:4-7', chapter: 38,
+                x: 50, y: 58, zone: 'terra',
+                desc: 'Deus pergunta onde Jó estava quando lançou os fundamentos da terra.',
+                verse: 'Onde você estava, quando eu lancei os fundamentos da terra?'
+            },
+            {
+                icon: '🦁', title: 'Leão', ref: 'Jó 38:39-40', chapter: 38,
+                x: 25, y: 65, zone: 'animal',
+                desc: 'Deus provê alimento para o leão e seus filhotes.',
+                verse: 'Você pode caçar presa para a leoa ou saciar a fome dos leõezinhos?'
+            },
+            {
+                icon: '🦬', title: 'Boi Selvagem', ref: 'Jó 39:9-12', chapter: 39,
+                x: 70, y: 62, zone: 'animal',
+                desc: 'O boi selvagem indomável que não pode ser controlado pelo homem.',
+                verse: 'O boi selvagem vai querer servi-lo ou vai passar a noite junto à manjedoura?'
+            },
+            {
+                icon: '🌊', title: 'Mar', ref: 'Jó 38:8-11', chapter: 38,
+                x: 8, y: 75, zone: 'agua',
+                desc: 'Deus conteve o mar e estabeleceu seus limites com portas.',
+                verse: 'Quem fechou o mar com portas, quando ele rompeu e saiu do ventre?'
+            },
+            {
+                icon: '🦛', title: 'Beemote', ref: 'Jó 40:15-24', chapter: 40,
+                x: 35, y: 80, zone: 'animal',
+                desc: 'Criatura poderosa que come erva como o boi, símbolo do poder criador.',
+                verse: 'Eis aí o beemote, que eu fiz assim como fiz você; ele come erva como o boi.'
+            },
+            {
+                icon: '🐉', title: 'Leviatã', ref: 'Jó 41:1-34', chapter: 41,
+                x: 65, y: 88, zone: 'agua',
+                desc: 'A criatura marinha indomável que ninguém pode subjugar exceto Deus.',
+                verse: 'Na terra não há nada que se lhe compare, pois foi feito para não ter medo.'
+            }
+        ];
+
+        const itemsContainer = document.getElementById('items-container');
+        const detailPanel = document.getElementById('detail-panel');
+
+        // Create map items
+        creationElements.forEach((el, index) => {
+            const item = document.createElement('div');
+            item.className = 'map-item';
+            item.style.left = el.x + '%';
+            item.style.top = el.y + '%';
+            item.dataset.index = index;
+
+            item.innerHTML = `
+        <div class="item-icon">${el.icon}</div>
+        <div class="item-label">${el.title}</div>
+      `;
+
+            item.addEventListener('click', () => showDetail(index));
+            itemsContainer.appendChild(item);
+        });
+
+        function showDetail(index) {
+            const el = creationElements[index];
+
+            // Update active state
+            document.querySelectorAll('.map-item').forEach((item, i) => {
+                item.classList.toggle('active', i === index);
+            });
+
+            // Update panel
+            document.getElementById('detail-icon').textContent = el.icon;
+            document.getElementById('detail-title').textContent = el.title;
+            document.getElementById('detail-ref').innerHTML = `<a href="${getBibleLink(el.chapter)}" target="_blank">${el.ref}</a>`;
+            document.getElementById('detail-desc').textContent = el.desc;
+            document.getElementById('detail-verse').textContent = `"${el.verse}"`;
+
+            detailPanel.classList.add('visible');
+        }
+
+        document.getElementById('close-btn').addEventListener('click', () => {
+            detailPanel.classList.remove('visible');
+            document.querySelectorAll('.map-item').forEach(item => item.classList.remove('active'));
+        });
+    </script>
+</body>
+
+</html>

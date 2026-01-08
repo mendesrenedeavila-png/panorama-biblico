@@ -1,0 +1,859 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Linha do Tempo das Conversas – Panorama de Jó</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@600;700&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0a0e17;
+            --bg-secondary: #111827;
+            --bg-card: #1a1f2e;
+            --bg-card-hover: #252b3d;
+            --accent-gold: #d4a853;
+            --accent-gold-light: #f5d98a;
+            --accent-blue: #60a5fa;
+            --accent-purple: #a78bfa;
+            --accent-emerald: #34d399;
+            --accent-rose: #fb7185;
+            --accent-orange: #fb923c;
+            --accent-cyan: #22d3ee;
+            --text-primary: #f9fafb;
+            --text-secondary: #9ca3af;
+            --text-muted: #6b7280;
+            --border-subtle: rgba(255, 255, 255, 0.08);
+            --transition-smooth: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+
+            /* Speaker colors */
+            --color-jo: #60a5fa;
+            --color-elifaz: #fb923c;
+            --color-bildade: #a78bfa;
+            --color-zofar: #fb7185;
+            --color-eliu: #22d3ee;
+            --color-deus: #34d399;
+            --color-narrador: #d4a853;
+            --color-satanas: #ef4444;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        /* Background pattern */
+        .bg-pattern {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            opacity: 0.4;
+            background:
+                radial-gradient(circle at 20% 20%, rgba(96, 165, 250, 0.08) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(212, 168, 83, 0.06) 0%, transparent 50%);
+        }
+
+        /* Header */
+        header {
+            text-align: center;
+            padding: 50px 20px 30px;
+            position: sticky;
+            top: 0;
+            background: linear-gradient(to bottom, var(--bg-primary) 0%, var(--bg-primary) 80%, transparent 100%);
+            z-index: 100;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(96, 165, 250, 0.15);
+            color: var(--accent-blue);
+            padding: 8px 16px;
+            border-radius: 100px;
+            font-size: 12px;
+            font-weight: 500;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            margin-bottom: 16px;
+            border: 1px solid rgba(96, 165, 250, 0.2);
+        }
+
+        h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(1.8rem, 4vw, 2.8rem);
+            font-weight: 700;
+            margin-bottom: 12px;
+            background: linear-gradient(135deg, var(--text-primary) 0%, var(--accent-blue) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            font-size: 1rem;
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* Filter bar */
+        .filter-bar {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .filter-btn {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 16px;
+            border-radius: 100px;
+            border: 1px solid var(--border-subtle);
+            background: var(--bg-card);
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+        }
+
+        .filter-btn:hover {
+            background: var(--bg-card-hover);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .filter-btn.active {
+            background: var(--speaker-color, var(--accent-gold));
+            color: var(--bg-primary);
+            border-color: transparent;
+        }
+
+        .filter-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+
+        /* Container */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Timeline */
+        .timeline-wrapper {
+            position: relative;
+            overflow-x: auto;
+            padding: 40px 0;
+            scrollbar-width: thin;
+            scrollbar-color: var(--accent-blue) var(--bg-secondary);
+        }
+
+        .timeline-wrapper::-webkit-scrollbar {
+            height: 8px;
+        }
+
+        .timeline-wrapper::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+            border-radius: 4px;
+        }
+
+        .timeline-wrapper::-webkit-scrollbar-thumb {
+            background: var(--accent-blue);
+            border-radius: 4px;
+        }
+
+        .timeline {
+            display: flex;
+            gap: 0;
+            min-width: max-content;
+            padding: 0 40px;
+            position: relative;
+        }
+
+        /* Timeline base line */
+        .timeline::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 40px;
+            right: 40px;
+            height: 4px;
+            background: linear-gradient(90deg,
+                    var(--color-narrador) 0%,
+                    var(--color-jo) 5%,
+                    var(--color-jo) 70%,
+                    var(--color-eliu) 75%,
+                    var(--color-deus) 90%,
+                    var(--color-narrador) 100%);
+            border-radius: 2px;
+            transform: translateY(-50%);
+            z-index: 0;
+        }
+
+        /* Speech block */
+        .speech-block {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 90px;
+            cursor: pointer;
+            z-index: 1;
+            transition: var(--transition-smooth);
+        }
+
+        .speech-block:hover {
+            transform: scale(1.05);
+        }
+
+        .speech-block.hidden {
+            opacity: 0.15 !important;
+            transform: scale(0.9) !important;
+            pointer-events: none;
+            animation: none !important;
+        }
+
+        /* Speech marker */
+        .speech-marker {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.9rem;
+            color: var(--bg-primary);
+            background: var(--speaker-color);
+            border: 4px solid var(--bg-primary);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            transition: var(--transition-smooth);
+            position: relative;
+            z-index: 2;
+        }
+
+        .speech-block:hover .speech-marker {
+            transform: scale(1.15);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4), 0 0 20px var(--speaker-color);
+        }
+
+        /* Speech marker with image */
+        .speech-marker-img {
+            background-size: cover;
+            background-position: center;
+        }
+
+        /* Chapter label */
+        .chapter-label {
+            position: absolute;
+            top: -30px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            white-space: nowrap;
+        }
+
+        /* Speaker name */
+        .speaker-name {
+            margin-top: 12px;
+            font-size: 0.7rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            text-align: center;
+            max-width: 80px;
+            line-height: 1.3;
+        }
+
+        /* Section dividers */
+        .section-divider {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 0 20px;
+            position: relative;
+        }
+
+        .section-divider::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 60px;
+            background: rgba(255, 255, 255, 0.03);
+            transform: translateY(-50%);
+            border-left: 2px dashed var(--border-subtle);
+            border-right: 2px dashed var(--border-subtle);
+        }
+
+        .section-label {
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            color: var(--text-muted);
+            background: var(--bg-primary);
+            padding: 4px 12px;
+            border-radius: 100px;
+            z-index: 1;
+        }
+
+        /* Tooltip */
+        .tooltip {
+            position: fixed;
+            max-width: 320px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+            z-index: 1000;
+            pointer-events: none;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: opacity 0.2s, transform 0.2s;
+        }
+
+        .tooltip.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .tooltip-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border-subtle);
+        }
+
+        .tooltip-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            color: var(--bg-primary);
+        }
+
+        .tooltip-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .tooltip-chapter {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .tooltip-content {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin-bottom: 12px;
+        }
+
+        .tooltip-verse {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            font-style: italic;
+            padding: 12px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            border-left: 3px solid var(--speaker-color);
+        }
+
+        .tooltip-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: 12px;
+            color: var(--accent-blue);
+            font-size: 0.8rem;
+            text-decoration: none;
+        }
+
+        .tooltip-link:hover {
+            text-decoration: underline;
+        }
+
+        /* Legend */
+        .legend {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 16px;
+            margin: 40px 0;
+            padding: 16px;
+            background: var(--bg-card);
+            border-radius: 16px;
+            border: 1px solid var(--border-subtle);
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        .legend-dot {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+        }
+
+        .legend-img {
+            background-size: cover;
+            background-position: center;
+        }
+
+        /* Stats */
+        .stats-row {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 30px;
+            margin: 30px 0;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 16px 24px;
+            background: var(--bg-card);
+            border-radius: 12px;
+            border: 1px solid var(--border-subtle);
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--accent-blue);
+        }
+
+        .stat-label {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 40px 20px;
+            border-top: 1px solid var(--border-subtle);
+            margin-top: 40px;
+        }
+
+        footer p {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--accent-blue);
+            text-decoration: none;
+            font-size: 0.9rem;
+            margin-top: 16px;
+            padding: 12px 24px;
+            background: rgba(96, 165, 250, 0.1);
+            border-radius: 100px;
+            border: 1px solid rgba(96, 165, 250, 0.2);
+            transition: var(--transition-smooth);
+        }
+
+        .back-link:hover {
+            background: rgba(96, 165, 250, 0.2);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .speech-block {
+                width: 70px;
+            }
+
+            .speech-marker {
+                width: 40px;
+                height: 40px;
+                font-size: 0.75rem;
+            }
+
+            .filter-btn {
+                padding: 6px 12px;
+                font-size: 0.7rem;
+            }
+        }
+
+        /* Animation */
+        @keyframes fadeInScale {
+            from {
+                opacity: 0;
+                transform: scale(0.8);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .speech-block {
+            animation: fadeInScale 0.4s ease-out forwards;
+            opacity: 0;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="bg-pattern"></div>
+
+    <header>
+        <div class="badge">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10" />
+                <polyline points="12 6 12 12 16 14" />
+            </svg>
+            Elemento 2 · Panorama de Jó
+        </div>
+        <h1>Linha do Tempo das Conversas</h1>
+        <p class="subtitle">Navegue pelos 42 capítulos e veja quem fala em cada momento do livro de Jó.</p>
+    </header>
+
+    <div class="filter-bar" id="filters">
+        <!-- Filters will be rendered by JS -->
+    </div>
+
+    <div class="stats-row" id="stats">
+        <!-- Stats will be rendered by JS -->
+    </div>
+
+    <div class="container">
+        <div class="timeline-wrapper">
+            <div class="timeline" id="timeline">
+                <!-- Timeline will be rendered by JS -->
+            </div>
+        </div>
+
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-dot" style="background: var(--color-jo);"></div>
+                <span>Jó</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-dot" style="background: var(--color-elifaz);"></div>
+                <span>Elifaz</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-dot" style="background: var(--color-bildade);"></div>
+                <span>Bildade</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-dot" style="background: var(--color-zofar);"></div>
+                <span>Zofar</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-dot" style="background: var(--color-eliu);"></div>
+                <span>Eliú</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-dot" style="background: var(--color-deus);"></div>
+                <span>Deus</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-dot" style="background: var(--color-narrador);"></div>
+                <span>Narrador</span>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>Baseado na Nova Almeida Atualizada (NAA) • Uso exclusivo para estudo bíblico</p>
+        <a href="../index.html" class="back-link">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M19 12H5M12 19l-7-7 7-7" />
+            </svg>
+            Voltar ao Panorama
+        </a>
+        <a href="https://deepmind.google/" target="_blank"
+            style="display: inline-flex; align-items: center; gap: 8px; color: rgba(255,255,255,0.5); text-decoration: none; font-size: 0.75rem; margin-top: 12px;">
+            <span
+                style="width: 18px; height: 18px; border-radius: 4px; background: linear-gradient(135deg, #4285f4, #34a853, #fbbc05, #ea4335);"></span>
+            Criado com ♥ usando Google Antigravity
+        </a>
+    </footer>
+
+    <!-- Tooltip -->
+    <div class="tooltip" id="tooltip"></div>
+
+    <script>
+        // URL builder for Bible links
+        const getBibleLink = (chapter) => `https://www.bibliaonline.com.br/naa/j%C3%B3/${chapter}`;
+
+        // Speaker configuration with images
+        const speakers = {
+            'Jó': { color: 'var(--color-jo)', abbrev: 'JÓ', image: '../imagens/JO.png' },
+            'Elifaz': { color: 'var(--color-elifaz)', abbrev: 'ELI', image: '../imagens/ELIFAZ.png' },
+            'Bildade': { color: 'var(--color-bildade)', abbrev: 'BIL', image: '../imagens/BILDADE.png' },
+            'Zofar': { color: 'var(--color-zofar)', abbrev: 'ZOF', image: '../imagens/ZOFAR.png' },
+            'Eliú': { color: 'var(--color-eliu)', abbrev: 'ELÚ', image: '../imagens/ELIU.png' },
+            'Deus': { color: 'var(--color-deus)', abbrev: 'DEUS', image: '../imagens/DEUS.png' },
+            'Narrador': { color: 'var(--color-narrador)', abbrev: 'NAR' },
+            'Satanás': { color: 'var(--color-satanas)', abbrev: 'SAT', image: '../imagens/SATANAS.png' }
+        };
+
+        // Complete chapter data based on the Book of Job structure
+        const chapters = [
+            // Prólogo (caps. 1-2)
+            { chapter: 1, speaker: 'Narrador', title: 'Jó, sua família e sua riqueza', summary: 'Apresentação de Jó: íntegro e reto. Satanás desafia Deus. Jó perde tudo mas não peca.', keyVerse: 'Nu saí do ventre de minha mãe e nu voltarei. O Senhor o deu e o Senhor o tomou; bendito seja o nome do Senhor!' },
+            { chapter: 2, speaker: 'Narrador', title: 'Satanás fere Jó', summary: 'Segundo desafio de Satanás. Jó é ferido com úlceras. Os três amigos chegam.', keyVerse: 'Recebemos de Deus o bem e não receberíamos também o mal?' },
+
+            // Primeiro Ciclo (caps. 3-14)
+            { chapter: 3, speaker: 'Jó', title: 'Jó amaldiçoa o seu nascimento', summary: 'Jó rompe o silêncio amaldiçoando o dia em que nasceu.', keyVerse: 'Pereça o dia em que nasci e a noite em que se disse: "Foi concebido um homem!"', section: 'Primeiro Ciclo' },
+            { chapter: 4, speaker: 'Elifaz', title: 'Primeira fala de Elifaz', summary: 'Elifaz argumenta que nenhum inocente perece; os que semeiam o mal, colhem o mal.', keyVerse: 'Pense bem: será que algum inocente já chegou a perecer?' },
+            { chapter: 5, speaker: 'Elifaz', title: 'Elifaz continua', summary: 'Elifaz aconselha Jó a buscar a Deus e aceitar a disciplina divina.', keyVerse: 'Feliz é o homem a quem Deus disciplina; não rejeite, pois, a correção do Todo-Poderoso.' },
+            { chapter: 6, speaker: 'Jó', title: 'Resposta de Jó a Elifaz', summary: 'Jó defende sua angústia e lamenta a falta de compaixão dos amigos.', keyVerse: 'Aquele que sofre deve receber a compaixão do amigo, mesmo se tiver abandonado o temor do Todo-Poderoso.' },
+            { chapter: 7, speaker: 'Jó', title: 'Jó clama a Deus', summary: 'Jó questiona por que Deus o persegue e não perdoa seu pecado.', keyVerse: 'Por que me pões por alvo, de modo que me tenha tornado um peso para mim mesmo?' },
+            { chapter: 8, speaker: 'Bildade', title: 'Primeira fala de Bildade', summary: 'Bildade defende a justiça de Deus: se Jó fosse puro, Deus o restauraria.', keyVerse: 'Se você procurar a Deus e implorar o favor do Todo-Poderoso... ele te restaurará.' },
+            { chapter: 9, speaker: 'Jó', title: 'Resposta de Jó a Bildade', summary: 'Jó reconhece a grandeza de Deus mas questiona como um mortal pode se justificar.', keyVerse: 'Se eu quisesse contender com ele, não lhe poderia responder uma vez em mil.' },
+            { chapter: 10, speaker: 'Jó', title: 'Jó questiona Deus', summary: 'Jó expressa sua amargura e questiona por que Deus o criou para sofrer.', keyVerse: 'Dize-me por que contendes comigo?' },
+            { chapter: 11, speaker: 'Zofar', title: 'Primeira fala de Zofar', summary: 'Zofar acusa Jó de palavreado vazio e insinua que ele merece pior.', keyVerse: 'Saiba, portanto, que Deus permite que seja esquecida parte da sua iniquidade.' },
+            { chapter: 12, speaker: 'Jó', title: 'Resposta de Jó a Zofar', summary: 'Jó ironiza a "sabedoria" dos amigos e declara a soberania misteriosa de Deus.', keyVerse: 'Na mão dele está a vida de todo ser vivente e o espírito de todo ser humano.' },
+            { chapter: 13, speaker: 'Jó', title: 'Jó deseja falar com Deus', summary: 'Jó prefere apresentar sua causa diante de Deus, não dos amigos.', keyVerse: 'Ainda que ele me mate, nele esperarei; contudo, defenderei os meus caminhos diante dele.' },
+            { chapter: 14, speaker: 'Jó', title: 'A brevidade da vida', summary: 'Jó lamenta a efemeridade da vida humana e a falta de esperança.', keyVerse: 'O ser humano, nascido de mulher, vive pouco tempo e cheio de inquietação.' },
+
+            // Segundo Ciclo (caps. 15-21)
+            { chapter: 15, speaker: 'Elifaz', title: 'Segunda fala de Elifaz', summary: 'Elifaz acusa Jó de presunção e descreve o destino dos ímpios.', keyVerse: 'Por que o seu coração o arrebata, e por que cintilam assim os seus olhos?', section: 'Segundo Ciclo' },
+            { chapter: 16, speaker: 'Jó', title: 'Resposta de Jó', summary: 'Jó chama os amigos de consoladores molestos e clama que seu testemunho está no céu.', keyVerse: 'Tenho ouvido muitas coisas como essas; vocês são todos consoladores que apenas aumentam as aflições.' },
+            { chapter: 17, speaker: 'Jó', title: 'Jó na escuridão', summary: 'Jó vê a sepultura como sua única esperança.', keyVerse: 'Onde está, pois, a minha esperança? Quem poderá ver alguma esperança para mim?' },
+            { chapter: 18, speaker: 'Bildade', title: 'Segunda fala de Bildade', summary: 'Bildade descreve vividamente a destruição que aguarda o ímpio.', keyVerse: 'A luz do ímpio se apagará, e a chama do seu fogo não brilhará.' },
+            { chapter: 19, speaker: 'Jó', title: 'Eu sei que o meu Redentor vive', summary: 'Jó lamenta o abandono mas declara fé no Redentor.', keyVerse: 'Eu sei que o meu Redentor vive e que por fim se levantará sobre a terra.' },
+            { chapter: 20, speaker: 'Zofar', title: 'Segunda fala de Zofar', summary: 'Zofar descreve como a prosperidade do ímpio é passageira.', keyVerse: 'A alegria dos ímpios é breve, e o gozo do ímpio, momentâneo.' },
+            { chapter: 21, speaker: 'Jó', title: 'Resposta de Jó', summary: 'Jó contesta: muitos ímpios prosperam e morrem em paz.', keyVerse: 'Por que os ímpios continuam vivos, envelhecem e ainda se tornam mais poderosos?' },
+
+            // Terceiro Ciclo (caps. 22-31)
+            { chapter: 22, speaker: 'Elifaz', title: 'Terceira fala de Elifaz', summary: 'Elifaz acusa Jó de pecados específicos e o chama ao arrependimento.', keyVerse: 'Por ventura, a sua maldade não é grande? Não há fim para as suas iniquidades.', section: 'Terceiro Ciclo' },
+            { chapter: 23, speaker: 'Jó', title: 'Jó deseja encontrar Deus', summary: 'Jó anseia por apresentar seu caso diante de Deus, mas não o encontra.', keyVerse: 'Ah, se eu soubesse onde encontrá-lo! Então iria até o seu tribunal.' },
+            { chapter: 24, speaker: 'Jó', title: 'A injustiça no mundo', summary: 'Jó questiona por que Deus permite a opressão.', keyVerse: 'Por que o Todo-Poderoso não determinou tempos de juízo?' },
+            { chapter: 25, speaker: 'Bildade', title: 'Terceira fala de Bildade', summary: 'Breve discurso sobre a grandeza de Deus e a insignificância humana.', keyVerse: 'Como pode então o ser humano ser justo diante de Deus?' },
+            { chapter: 26, speaker: 'Jó', title: 'Resposta de Jó', summary: 'Jó descreve o poder de Deus sobre a criação.', keyVerse: 'Eis que estas são apenas as orlas dos seus caminhos; e quão pouco é o que temos ouvido dele!' },
+            { chapter: 27, speaker: 'Jó', title: 'Jó mantém sua integridade', summary: 'Jó jura que não abrirá mão de sua integridade.', keyVerse: 'Até morrer, não abrirei mão da minha integridade.' },
+            { chapter: 28, speaker: 'Jó', title: 'A sabedoria divina', summary: 'Poema sobre a sabedoria: onde ela se encontra?', keyVerse: 'Eis que o temor do Senhor é a sabedoria, e apartar-se do mal é o entendimento.' },
+            { chapter: 29, speaker: 'Jó', title: 'Jó lembra o passado', summary: 'Jó recorda sua prosperidade e honra passadas.', keyVerse: 'Quem dera eu fosse como nos meses passados, como nos dias em que Deus me guardava.' },
+            { chapter: 30, speaker: 'Jó', title: 'Jó lamenta o presente', summary: 'Jó descreve sua humilhação e sofrimento atuais.', keyVerse: 'Mas agora riem de mim os mais novos do que eu.' },
+            { chapter: 31, speaker: 'Jó', title: 'Defesa final de Jó', summary: 'Jó jura inocência e desafia Deus a responder.', keyVerse: 'Quem dera eu tivesse quem me ouvisse! Eis aqui a minha defesa assinada!' },
+
+            // Discursos de Eliú (caps. 32-37)
+            { chapter: 32, speaker: 'Eliú', title: 'Eliú entra no debate', summary: 'Eliú, jovem e irado, decide falar porque os outros falharam.', keyVerse: 'Na verdade, há um espírito no homem, e o sopro do Todo-Poderoso lhe dá entendimento.', section: 'Discursos de Eliú' },
+            { chapter: 33, speaker: 'Eliú', title: 'Deus fala de muitos modos', summary: 'Eliú argumenta que Deus fala através de sonhos e sofrimentos.', keyVerse: 'Porque Deus fala de um modo, e de outro, mas o ser humano não entende.' },
+            { chapter: 34, speaker: 'Eliú', title: 'A justiça de Deus', summary: 'Eliú defende a justiça absoluta de Deus.', keyVerse: 'Longe de Deus o praticar a maldade, e do Todo-Poderoso o cometer injustiça.' },
+            { chapter: 35, speaker: 'Eliú', title: 'Os clamores sem resposta', summary: 'Eliú explica por que Deus nem sempre responde.', keyVerse: 'Por causa da multidão de opressões clamam; pedem socorro por causa do braço dos poderosos.' },
+            { chapter: 36, speaker: 'Eliú', title: 'A grandeza de Deus', summary: 'Eliú exalta a grandeza de Deus e seu governo justo.', keyVerse: 'Deus é grande e não desprezará ninguém; grande é ele em força de entendimento.' },
+            { chapter: 37, speaker: 'Eliú', title: 'A majestade de Deus', summary: 'Eliú descreve o poder de Deus nas tempestades.', keyVerse: 'Depois disto também treme o meu coração e salta do seu lugar.' },
+
+            // Discursos de Deus (caps. 38-41)
+            { chapter: 38, speaker: 'Deus', title: 'Deus fala do redemoinho', summary: 'Deus questiona Jó sobre a criação da terra, do mar, da luz.', keyVerse: 'Onde você estava, quando eu lancei os fundamentos da terra?', section: 'Discursos de Deus' },
+            { chapter: 39, speaker: 'Deus', title: 'Os animais selvagens', summary: 'Deus questiona Jó sobre os animais e suas maravilhas.', keyVerse: 'Quem pôs em liberdade o jumento selvagem?' },
+            { chapter: 40, speaker: 'Deus', title: 'Jó responde; Deus continua', summary: 'Jó reconhece sua pequenez. Deus descreve o beemote.', keyVerse: 'Quem critica o Todo-Poderoso quererá ensiná-lo? Aquele que repreende a Deus que responda.' },
+            { chapter: 41, speaker: 'Deus', title: 'O Leviatã', summary: 'Deus descreve o poderoso Leviatã, criatura indomável.', keyVerse: 'Na terra não há nada que se lhe compare, pois foi feito para não ter medo.' },
+
+            // Epílogo (cap. 42)
+            { chapter: 42, speaker: 'Narrador', title: 'Restauração de Jó', summary: 'Jó se arrepende, Deus repreende os amigos, Jó é restaurado em dobro.', keyVerse: 'Eu te conhecia só de ouvir, mas agora os meus olhos te veem.', section: 'Epílogo' }
+        ];
+
+        // Calculate statistics
+        const speakerStats = {};
+        chapters.forEach(ch => {
+            speakerStats[ch.speaker] = (speakerStats[ch.speaker] || 0) + 1;
+        });
+
+        // Render filters
+        const filtersContainer = document.getElementById('filters');
+
+        const allBtn = document.createElement('button');
+        allBtn.className = 'filter-btn active';
+        allBtn.textContent = 'Todos';
+        allBtn.dataset.speaker = 'all';
+        filtersContainer.appendChild(allBtn);
+
+        Object.entries(speakers).forEach(([name, config]) => {
+            if (speakerStats[name]) {
+                const btn = document.createElement('button');
+                btn.className = 'filter-btn';
+                btn.dataset.speaker = name;
+                btn.style.setProperty('--speaker-color', config.color);
+                btn.innerHTML = `<div class="filter-dot" style="background: ${config.color};"></div> ${name} (${speakerStats[name]})`;
+                filtersContainer.appendChild(btn);
+            }
+        });
+
+        // Render stats
+        const statsContainer = document.getElementById('stats');
+        const topSpeakers = Object.entries(speakerStats)
+            .sort((a, b) => b[1] - a[1])
+            .slice(0, 4);
+
+        topSpeakers.forEach(([name, count]) => {
+            const stat = document.createElement('div');
+            stat.className = 'stat-item';
+            stat.innerHTML = `
+        <div class="stat-value" style="color: ${speakers[name].color};">${count}</div>
+        <div class="stat-label">caps. de ${name}</div>
+      `;
+            statsContainer.appendChild(stat);
+        });
+
+        // Render timeline
+        const timelineContainer = document.getElementById('timeline');
+        let currentSection = null;
+
+        chapters.forEach((ch, index) => {
+            // Add section divider if new section
+            if (ch.section && ch.section !== currentSection) {
+                currentSection = ch.section;
+                const divider = document.createElement('div');
+                divider.className = 'section-divider';
+                divider.innerHTML = `<span class="section-label">${ch.section}</span>`;
+                timelineContainer.appendChild(divider);
+            }
+
+            const speakerConfig = speakers[ch.speaker] || speakers['Narrador'];
+
+            const block = document.createElement('div');
+            block.className = 'speech-block';
+            block.dataset.speaker = ch.speaker;
+            block.dataset.chapter = ch.chapter;
+            block.style.setProperty('--speaker-color', speakerConfig.color);
+            block.style.animationDelay = `${index * 0.03}s`;
+
+            // Use image if available, otherwise use abbreviation
+            const markerContent = speakerConfig.image
+                ? `<div class="speech-marker speech-marker-img" style="background-image: url('${speakerConfig.image}');"></div>`
+                : `<div class="speech-marker">${speakerConfig.abbrev}</div>`;
+
+            block.innerHTML = `
+        <div class="chapter-label">Cap. ${ch.chapter}</div>
+        ${markerContent}
+        <div class="speaker-name">${ch.speaker}</div>
+      `;
+
+            // Store data for tooltip
+            block.chapterData = ch;
+
+            timelineContainer.appendChild(block);
+        });
+
+        // Filter functionality
+        const filterBtns = document.querySelectorAll('.filter-btn');
+
+        filterBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                // Remove active from all buttons
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+
+                const speaker = btn.dataset.speaker;
+
+                // Query speech blocks each time (in case they were added dynamically)
+                document.querySelectorAll('.speech-block').forEach(block => {
+                    if (speaker === 'all' || block.dataset.speaker === speaker) {
+                        block.classList.remove('hidden');
+                    } else {
+                        block.classList.add('hidden');
+                    }
+                });
+            });
+        });
+
+        // Tooltip functionality
+        const tooltip = document.getElementById('tooltip');
+
+        speechBlocks.forEach(block => {
+            block.addEventListener('mouseenter', (e) => {
+                const ch = block.chapterData;
+                const speakerConfig = speakers[ch.speaker];
+
+                tooltip.innerHTML = `
+          <div class="tooltip-header">
+            <div class="tooltip-icon" style="background: ${speakerConfig.color};">${speakerConfig.abbrev}</div>
+            <div>
+              <div class="tooltip-title">${ch.title}</div>
+              <div class="tooltip-chapter">Capítulo ${ch.chapter} • ${ch.speaker}</div>
+            </div>
+          </div>
+          <div class="tooltip-content">${ch.summary}</div>
+          <div class="tooltip-verse" style="--speaker-color: ${speakerConfig.color};">"${ch.keyVerse}"</div>
+          <a href="${getBibleLink(ch.chapter)}" target="_blank" class="tooltip-link">
+            Ler capítulo completo →
+          </a>
+        `;
+
+                tooltip.style.setProperty('--speaker-color', speakerConfig.color);
+
+                // Position tooltip
+                const rect = block.getBoundingClientRect();
+                const tooltipRect = tooltip.getBoundingClientRect();
+
+                let left = rect.left + rect.width / 2 - 160;
+                let top = rect.bottom + 15;
+
+                // Keep within viewport
+                if (left < 20) left = 20;
+                if (left + 320 > window.innerWidth) left = window.innerWidth - 340;
+                if (top + 250 > window.innerHeight) top = rect.top - 260;
+
+                tooltip.style.left = left + 'px';
+                tooltip.style.top = top + 'px';
+                tooltip.classList.add('visible');
+                tooltip.style.pointerEvents = 'auto';
+            });
+
+            block.addEventListener('mouseleave', () => {
+                tooltip.classList.remove('visible');
+                tooltip.style.pointerEvents = 'none';
+            });
+
+            // Click to open Bible link
+            block.addEventListener('click', () => {
+                window.open(getBibleLink(block.chapterData.chapter), '_blank');
+            });
+        });
+    </script>
+</body>
+
+</html>

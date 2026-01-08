@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Escalada do Conflito – Panorama de Jó</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@600;700&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0a0e17;
+            --bg-secondary: #111827;
+            --bg-card: #1a1f2e;
+            --accent-gold: #d4a853;
+            --accent-blue: #60a5fa;
+            --accent-rose: #fb7185;
+            --accent-emerald: #34d399;
+            --text-primary: #f9fafb;
+            --text-secondary: #9ca3af;
+            --text-muted: #6b7280;
+            --border-subtle: rgba(255, 255, 255, 0.08);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+
+        .bg-pattern {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: radial-gradient(circle at 20% 80%, rgba(251, 113, 133, 0.08) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(52, 211, 153, 0.06) 0%, transparent 50%);
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(251, 113, 133, 0.15);
+            color: var(--accent-rose);
+            padding: 8px 16px;
+            border-radius: 100px;
+            font-size: 12px;
+            font-weight: 500;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            margin-bottom: 16px;
+            border: 1px solid rgba(251, 113, 133, 0.2);
+        }
+
+        h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(1.8rem, 4vw, 2.8rem);
+            font-weight: 700;
+            margin-bottom: 12px;
+            background: linear-gradient(135deg, var(--text-primary), var(--accent-rose));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            font-size: 1rem;
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* Chart container */
+        .chart-container {
+            background: var(--bg-card);
+            border-radius: 20px;
+            padding: 30px;
+            border: 1px solid var(--border-subtle);
+            margin-top: 30px;
+        }
+
+        .chart-wrapper {
+            position: relative;
+            height: 400px;
+            margin: 20px 0;
+        }
+
+        .chart-svg {
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Axis */
+        .axis-line {
+            stroke: var(--border-subtle);
+            stroke-width: 1;
+        }
+
+        .axis-label {
+            fill: var(--text-muted);
+            font-size: 10px;
+        }
+
+        .grid-line {
+            stroke: var(--border-subtle);
+            stroke-width: 0.5;
+            stroke-dasharray: 4, 4;
+        }
+
+        /* Data line */
+        .tension-line {
+            fill: none;
+            stroke-width: 3;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .tension-area {
+            opacity: 0.15;
+        }
+
+        /* Points */
+        .data-point {
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .data-point:hover {
+            transform: scale(1.3);
+        }
+
+        /* Legend */
+        .legend {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        .legend-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        /* Tooltip */
+        .tooltip {
+            position: fixed;
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: 12px;
+            padding: 16px;
+            max-width: 280px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+            z-index: 1000;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .tooltip.visible {
+            opacity: 1;
+        }
+
+        .tooltip-title {
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .tooltip-content {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        .tooltip-chapter {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: 8px;
+        }
+
+        .tooltip-chapter a {
+            color: var(--accent-rose);
+            text-decoration: none;
+        }
+
+        /* Info panel */
+        .info-panel {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .info-card {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid var(--border-subtle);
+            text-align: center;
+        }
+
+        .info-value {
+            font-size: 2rem;
+            font-weight: 700;
+        }
+
+        .info-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-top: 4px;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 50px;
+            padding-top: 30px;
+            border-top: 1px solid var(--border-subtle);
+        }
+
+        footer p {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--accent-rose);
+            text-decoration: none;
+            font-size: 0.9rem;
+            margin-top: 16px;
+            padding: 12px 24px;
+            background: rgba(251, 113, 133, 0.1);
+            border-radius: 100px;
+            border: 1px solid rgba(251, 113, 133, 0.2);
+            transition: all 0.3s;
+        }
+
+        .back-link:hover {
+            background: rgba(251, 113, 133, 0.2);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="bg-pattern"></div>
+    <div class="container">
+        <header>
+            <div class="badge">📈 Elemento 6 · Panorama de Jó</div>
+            <h1>Escalada do Conflito</h1>
+            <p class="subtitle">Acompanhe a "montanha-russa emocional" do livro de Jó ao longo dos capítulos.</p>
+        </header>
+
+        <div class="chart-container">
+            <div class="chart-wrapper">
+                <svg class="chart-svg" id="chart"></svg>
+            </div>
+            <div class="legend">
+                <div class="legend-item">
+                    <div class="legend-dot" style="background: #fb7185;"></div>Tensão/Conflito
+                </div>
+                <div class="legend-item">
+                    <div class="legend-dot" style="background: #34d399;"></div>Esperança/Fé
+                </div>
+            </div>
+        </div>
+
+        <!-- Methodology explanation -->
+        <div class="methodology-card"
+            style="background: var(--bg-card); border-radius: 16px; padding: 24px; border: 1px solid var(--border-subtle); margin-top: 20px;">
+            <div
+                style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted); margin-bottom: 16px;">
+                📊 Como interpretar este gráfico</div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                <div
+                    style="padding: 16px; background: rgba(251, 113, 133, 0.1); border-radius: 12px; border-left: 3px solid #fb7185;">
+                    <div style="font-weight: 600; color: #fb7185; margin-bottom: 8px;">📈 Linha de Tensão/Conflito</div>
+                    <div style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.5;">
+                        Mede a intensidade das acusações, questionamentos, desespero e confronto em cada trecho.
+                        Alta tensão = mais acusações dos amigos ou lamentos intensos de Jó.
+                    </div>
+                </div>
+                <div
+                    style="padding: 16px; background: rgba(52, 211, 153, 0.1); border-radius: 12px; border-left: 3px solid #34d399;">
+                    <div style="font-weight: 600; color: #34d399; margin-bottom: 8px;">📉 Linha de Esperança/Fé</div>
+                    <div style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.5;">
+                        Mede expressões de fé, esperança em Deus, confiança e declarações positivas.
+                        O pico em Jó 19 ("Eu sei que o meu Redentor vive!") marca o ápice da fé.
+                    </div>
+                </div>
+            </div>
+            <div style="margin-top: 16px; font-size: 0.75rem; color: var(--text-muted); text-align: center;">
+                Valores calculados por análise temática do texto da Nova Almeida Atualizada (NAA)
+            </div>
+        </div>
+
+        <div class="info-panel">
+            <div class="info-card">
+                <div class="info-value" style="color: #fb7185;">Cap. 3</div>
+                <div class="info-label">Início do Lamento</div>
+            </div>
+            <div class="info-card">
+                <div class="info-value" style="color: #fb923c;">Cap. 19</div>
+                <div class="info-label">Pico de Esperança</div>
+            </div>
+            <div class="info-card">
+                <div class="info-value" style="color: #a78bfa;">Cap. 31</div>
+                <div class="info-label">Defesa Final</div>
+            </div>
+            <div class="info-card">
+                <div class="info-value" style="color: #34d399;">Cap. 42</div>
+                <div class="info-label">Resolução</div>
+            </div>
+        </div>
+
+        <footer>
+            <p>Baseado na Nova Almeida Atualizada (NAA)</p>
+            <a href="../index.html" class="back-link">← Voltar ao Panorama</a>
+            <a href="https://deepmind.google/" target="_blank"
+                style="display: inline-flex; align-items: center; gap: 8px; color: rgba(255,255,255,0.5); text-decoration: none; font-size: 0.75rem; margin-top: 12px;">
+                <span
+                    style="width: 18px; height: 18px; border-radius: 4px; background: linear-gradient(135deg, #4285f4, #34a853, #fbbc05, #ea4335);"></span>
+                Criado com ♥ usando Google Antigravity
+            </a>
+    </div>
+    </footer>
+    </div>
+
+    <div class="tooltip" id="tooltip"></div>
+
+    <script>
+        const getBibleLink = (ch) => `https://www.bibliaonline.com.br/naa/j%C3%B3/${ch}`;
+
+        // Data: tension and hope levels per chapter section
+        const data = [
+            { chapter: '1-2', label: 'Prólogo', tension: 30, hope: 80, desc: 'Jó perde tudo, mas não peca.' },
+            { chapter: '3', label: 'Lamento de Jó', tension: 85, hope: 10, desc: 'Jó amaldiçoa o dia em que nasceu.' },
+            { chapter: '4-5', label: '1º Elifaz', tension: 50, hope: 40, desc: 'Elifaz apela à tradição.' },
+            { chapter: '6-7', label: 'Resposta Jó', tension: 75, hope: 20, desc: 'Jó defende sua angústia.' },
+            { chapter: '8', label: '1º Bildade', tension: 55, hope: 35, desc: 'Bildade defende a justiça divina.' },
+            { chapter: '9-10', label: 'Resposta Jó', tension: 80, hope: 25, desc: 'Jó questiona como contestar Deus.' },
+            { chapter: '11', label: '1º Zofar', tension: 70, hope: 20, desc: 'Zofar acusa Jó severamente.' },
+            { chapter: '12-14', label: 'Resposta Jó', tension: 65, hope: 45, desc: '"Ainda que me mate, nele esperarei."' },
+            { chapter: '15', label: '2º Elifaz', tension: 60, hope: 30, desc: 'Acusações se intensificam.' },
+            { chapter: '16-17', label: 'Resposta Jó', tension: 85, hope: 35, desc: 'Jó clama por testemunha no céu.' },
+            { chapter: '18', label: '2º Bildade', tension: 65, hope: 20, desc: 'Bildade descreve ruína do ímpio.' },
+            { chapter: '19', label: 'Resposta Jó', tension: 70, hope: 90, desc: '"Eu sei que o meu Redentor vive!"' },
+            { chapter: '20', label: '2º Zofar', tension: 60, hope: 25, desc: 'Zofar fala da brevidade do ímpio.' },
+            { chapter: '21', label: 'Resposta Jó', tension: 55, hope: 30, desc: 'Jó contesta: ímpios prosperam.' },
+            { chapter: '22', label: '3º Elifaz', tension: 75, hope: 20, desc: 'Elifaz acusa pecados específicos.' },
+            { chapter: '23-24', label: 'Resposta Jó', tension: 60, hope: 50, desc: 'Jó anseia encontrar Deus.' },
+            { chapter: '25-31', label: 'Defesa Final', tension: 50, hope: 60, desc: 'Jó jura inocência e desafia.' },
+            { chapter: '32-37', label: 'Eliú', tension: 45, hope: 55, desc: 'Eliú propõe sofrimento como disciplina.' },
+            { chapter: '38-41', label: 'Deus Fala', tension: 20, hope: 85, desc: 'Deus revela Sua sabedoria.' },
+            { chapter: '42', label: 'Epílogo', tension: 5, hope: 95, desc: 'Jó restaurado; paz final.' }
+        ];
+
+        const svg = document.getElementById('chart');
+        const tooltip = document.getElementById('tooltip');
+
+        const margin = { top: 30, right: 30, bottom: 50, left: 50 };
+        const width = svg.clientWidth - margin.left - margin.right;
+        const height = svg.clientHeight - margin.top - margin.bottom;
+
+        // Scale functions
+        const xScale = (i) => margin.left + (i / (data.length - 1)) * width;
+        const yScale = (val) => margin.top + height - (val / 100) * height;
+
+        // Create grid lines
+        for (let i = 0; i <= 4; i++) {
+            const y = margin.top + (i / 4) * height;
+            const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+            line.setAttribute('x1', margin.left);
+            line.setAttribute('x2', margin.left + width);
+            line.setAttribute('y1', y);
+            line.setAttribute('y2', y);
+            line.classList.add('grid-line');
+            svg.appendChild(line);
+
+            const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            label.setAttribute('x', margin.left - 10);
+            label.setAttribute('y', y + 4);
+            label.setAttribute('text-anchor', 'end');
+            label.classList.add('axis-label');
+            label.textContent = (100 - i * 25) + '%';
+            svg.appendChild(label);
+        }
+
+        // Create path for tension
+        let tensionPath = `M ${xScale(0)} ${yScale(data[0].tension)}`;
+        let tensionArea = `M ${xScale(0)} ${yScale(0)} L ${xScale(0)} ${yScale(data[0].tension)}`;
+
+        let hopePath = `M ${xScale(0)} ${yScale(data[0].hope)}`;
+        let hopeArea = `M ${xScale(0)} ${yScale(0)} L ${xScale(0)} ${yScale(data[0].hope)}`;
+
+        data.forEach((d, i) => {
+            if (i > 0) {
+                tensionPath += ` L ${xScale(i)} ${yScale(d.tension)}`;
+                hopePath += ` L ${xScale(i)} ${yScale(d.hope)}`;
+            }
+            tensionArea += ` L ${xScale(i)} ${yScale(d.tension)}`;
+            hopeArea += ` L ${xScale(i)} ${yScale(d.hope)}`;
+        });
+
+        tensionArea += ` L ${xScale(data.length - 1)} ${yScale(0)} Z`;
+        hopeArea += ` L ${xScale(data.length - 1)} ${yScale(0)} Z`;
+
+        // Draw areas
+        const tensionAreaEl = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        tensionAreaEl.setAttribute('d', tensionArea);
+        tensionAreaEl.classList.add('tension-area');
+        tensionAreaEl.style.fill = '#fb7185';
+        svg.appendChild(tensionAreaEl);
+
+        const hopeAreaEl = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        hopeAreaEl.setAttribute('d', hopeArea);
+        hopeAreaEl.classList.add('tension-area');
+        hopeAreaEl.style.fill = '#34d399';
+        svg.appendChild(hopeAreaEl);
+
+        // Draw lines
+        const tensionLine = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        tensionLine.setAttribute('d', tensionPath);
+        tensionLine.classList.add('tension-line');
+        tensionLine.style.stroke = '#fb7185';
+        svg.appendChild(tensionLine);
+
+        const hopeLine = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        hopeLine.setAttribute('d', hopePath);
+        hopeLine.classList.add('tension-line');
+        hopeLine.style.stroke = '#34d399';
+        svg.appendChild(hopeLine);
+
+        // Draw data points and labels
+        data.forEach((d, i) => {
+            const x = xScale(i);
+
+            // Tension point
+            const tCircle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+            tCircle.setAttribute('cx', x);
+            tCircle.setAttribute('cy', yScale(d.tension));
+            tCircle.setAttribute('r', 6);
+            tCircle.setAttribute('fill', '#fb7185');
+            tCircle.classList.add('data-point');
+            tCircle.dataset.index = i;
+            svg.appendChild(tCircle);
+
+            // Hope point
+            const hCircle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+            hCircle.setAttribute('cx', x);
+            hCircle.setAttribute('cy', yScale(d.hope));
+            hCircle.setAttribute('r', 6);
+            hCircle.setAttribute('fill', '#34d399');
+            hCircle.classList.add('data-point');
+            hCircle.dataset.index = i;
+            svg.appendChild(hCircle);
+
+            // X-axis label
+            if (i % 2 === 0 || i === data.length - 1) {
+                const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                label.setAttribute('x', x);
+                label.setAttribute('y', margin.top + height + 25);
+                label.setAttribute('text-anchor', 'middle');
+                label.classList.add('axis-label');
+                label.textContent = d.chapter;
+                svg.appendChild(label);
+            }
+        });
+
+        // Tooltip events
+        document.querySelectorAll('.data-point').forEach(point => {
+            point.addEventListener('mouseenter', (e) => {
+                const d = data[point.dataset.index];
+                const firstCh = d.chapter.split('-')[0];
+                tooltip.innerHTML = `
+          <div class="tooltip-title">${d.label}</div>
+          <div class="tooltip-content">${d.desc}</div>
+          <div class="tooltip-chapter">
+            <a href="${getBibleLink(firstCh)}" target="_blank">Ler Jó ${d.chapter}</a>
+          </div>
+        `;
+                tooltip.style.left = (e.clientX + 15) + 'px';
+                tooltip.style.top = (e.clientY - 50) + 'px';
+                tooltip.classList.add('visible');
+            });
+
+            point.addEventListener('mouseleave', () => {
+                tooltip.classList.remove('visible');
+            });
+        });
+    </script>
+</body>
+
+</html>

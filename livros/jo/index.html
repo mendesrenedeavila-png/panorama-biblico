@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Panorama de Jó – Uma Jornada pela Sabedoria</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap"
+    rel="stylesheet">
+  <style>
+    :root {
+      --gold: #c9a227;
+      --gold-light: #e8d48b;
+      --gold-dark: #8b7019;
+      --bg-dark: #0c0c0c;
+      --bg-card: rgba(25, 25, 30, 0.85);
+      --text-light: #f5f5f5;
+      --text-muted: #888;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg-dark);
+      color: var(--text-light);
+      overflow-x: hidden;
+    }
+
+    /* ═══════════════════════════════════════════════════════════════
+       HERO SECTION - Full viewport immersive experience
+    ═══════════════════════════════════════════════════════════════ */
+    .hero {
+      position: relative;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+    }
+
+    /* Animated starfield background */
+    .starfield {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background:
+        radial-gradient(ellipse at bottom, #1a1a2e 0%, #0c0c0c 100%);
+    }
+
+    .stars,
+    .stars2,
+    .stars3 {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-repeat: repeat;
+    }
+
+    .stars {
+      background-image:
+        radial-gradient(1px 1px at 25px 5px, white, transparent),
+        radial-gradient(1px 1px at 50px 25px, white, transparent),
+        radial-gradient(1px 1px at 125px 20px, white, transparent),
+        radial-gradient(1.5px 1.5px at 50px 75px, white, transparent),
+        radial-gradient(1px 1px at 15px 125px, white, transparent),
+        radial-gradient(1px 1px at 110px 80px, white, transparent);
+      background-size: 200px 200px;
+      animation: twinkle 4s ease-in-out infinite;
+    }
+
+    .stars2 {
+      background-image:
+        radial-gradient(1px 1px at 75px 125px, white, transparent),
+        radial-gradient(1px 1px at 100px 75px, white, transparent),
+        radial-gradient(1.5px 1.5px at 199px 100px, white, transparent),
+        radial-gradient(1px 1px at 60px 15px, white, transparent),
+        radial-gradient(1px 1px at 175px 175px, white, transparent);
+      background-size: 200px 200px;
+      animation: twinkle 5s ease-in-out infinite 1s;
+      opacity: 0.6;
+    }
+
+    .stars3 {
+      background-image:
+        radial-gradient(1px 1px at 10px 60px, white, transparent),
+        radial-gradient(1px 1px at 150px 40px, white, transparent),
+        radial-gradient(1px 1px at 180px 130px, white, transparent);
+      background-size: 200px 200px;
+      animation: twinkle 6s ease-in-out infinite 2s;
+      opacity: 0.4;
+    }
+
+    @keyframes twinkle {
+
+      0%,
+      100% {
+        opacity: 0.3;
+      }
+
+      50% {
+        opacity: 1;
+      }
+    }
+
+    /* Decorative light beam from heaven */
+    .divine-light {
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 300px;
+      height: 60%;
+      background: linear-gradient(to bottom,
+          rgba(201, 162, 39, 0.15) 0%,
+          rgba(201, 162, 39, 0.05) 50%,
+          transparent 100%);
+      clip-path: polygon(40% 0%, 60% 0%, 100% 100%, 0% 100%);
+      animation: breathe 8s ease-in-out infinite;
+    }
+
+    @keyframes breathe {
+
+      0%,
+      100% {
+        opacity: 0.6;
+      }
+
+      50% {
+        opacity: 1;
+      }
+    }
+
+    /* Main title */
+    .hero-content {
+      position: relative;
+      z-index: 10;
+      text-align: center;
+      padding: 0 20px;
+    }
+
+    .book-label {
+      font-family: 'Inter', sans-serif;
+      font-size: 0.75rem;
+      font-weight: 500;
+      letter-spacing: 0.4em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 20px;
+      opacity: 0;
+      animation: fadeInUp 1s ease-out 0.3s forwards;
+    }
+
+    .main-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(3.5rem, 10vw, 7rem);
+      font-weight: 600;
+      line-height: 1;
+      letter-spacing: -0.02em;
+      background: linear-gradient(180deg,
+          var(--gold-light) 0%,
+          var(--gold) 40%,
+          var(--gold-dark) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 24px;
+      opacity: 0;
+      animation: fadeInUp 1s ease-out 0.5s forwards;
+    }
+
+    .subtitle {
+      font-size: 1.1rem;
+      font-weight: 300;
+      color: rgba(255, 255, 255, 0.6);
+      max-width: 500px;
+      margin: 20px auto 40px;
+      line-height: 1.7;
+      opacity: 0;
+      animation: fadeInUp 1s ease-out 0.7s forwards;
+    }
+
+    .verse-quote {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.3rem;
+      font-style: italic;
+      color: rgba(255, 255, 255, 0.5);
+      max-width: 600px;
+      margin: 0 auto 60px;
+      line-height: 1.6;
+      opacity: 0;
+      animation: fadeInUp 1s ease-out 0.9s forwards;
+    }
+
+    .verse-ref {
+      font-family: 'Inter', sans-serif;
+      font-size: 0.8rem;
+      font-style: normal;
+      color: var(--gold);
+      display: block;
+      margin-top: 12px;
+    }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* CTA Button */
+    .cta-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      padding: 18px 40px;
+      background: linear-gradient(135deg, var(--gold) 0%, var(--gold-dark) 100%);
+      color: var(--bg-dark);
+      font-weight: 600;
+      font-size: 0.95rem;
+      text-decoration: none;
+      border-radius: 50px;
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 10px 40px rgba(201, 162, 39, 0.3);
+      opacity: 0;
+      animation: fadeInUp 1s ease-out 1.1s forwards;
+    }
+
+    .cta-btn:hover {
+      transform: translateY(-3px) scale(1.02);
+      box-shadow: 0 20px 60px rgba(201, 162, 39, 0.4);
+    }
+
+    .cta-btn svg {
+      transition: transform 0.3s;
+    }
+
+    .cta-btn:hover svg {
+      transform: translateX(4px);
+    }
+
+    /* Scroll indicator */
+    .scroll-indicator {
+      position: absolute;
+      bottom: 40px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      color: rgba(255, 255, 255, 0.4);
+      font-size: 0.7rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      animation: bounce 2s infinite;
+    }
+
+    @keyframes bounce {
+
+      0%,
+      100% {
+        transform: translateX(-50%) translateY(0);
+      }
+
+      50% {
+        transform: translateX(-50%) translateY(10px);
+      }
+    }
+
+    /* ═══════════════════════════════════════════════════════════════
+       ELEMENTS SECTION
+    ═══════════════════════════════════════════════════════════════ */
+    .elements-section {
+      position: relative;
+      padding: 100px 20px;
+      background: linear-gradient(180deg, var(--bg-dark) 0%, #111 50%, var(--bg-dark) 100%);
+    }
+
+    .section-header {
+      text-align: center;
+      margin-bottom: 60px;
+    }
+
+    .section-label {
+      font-size: 0.7rem;
+      font-weight: 500;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 16px;
+    }
+
+    .section-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(2rem, 5vw, 3rem);
+      font-weight: 600;
+      color: var(--text-light);
+    }
+
+    /* Elements carousel/grid */
+    .elements-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 20px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    @media (max-width: 1000px) {
+      .elements-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+
+    @media (max-width: 600px) {
+      .elements-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    .element-card {
+      position: relative;
+      aspect-ratio: 1;
+      background: var(--bg-card);
+      border: 1px solid rgba(201, 162, 39, 0.1);
+      border-radius: 20px;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      text-decoration: none;
+      color: inherit;
+      overflow: hidden;
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      backdrop-filter: blur(10px);
+    }
+
+    .element-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 50% 0%, rgba(201, 162, 39, 0.1) 0%, transparent 70%);
+      opacity: 0;
+      transition: opacity 0.4s;
+    }
+
+    .element-card:hover {
+      transform: translateY(-8px);
+      border-color: var(--gold);
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4), 0 0 40px rgba(201, 162, 39, 0.1);
+    }
+
+    .element-card:hover::before {
+      opacity: 1;
+    }
+
+    .element-icon {
+      font-size: 2.5rem;
+      transition: transform 0.4s;
+    }
+
+    .element-card:hover .element-icon {
+      transform: scale(1.1);
+    }
+
+    .element-info {
+      position: relative;
+      z-index: 1;
+    }
+
+    .element-number {
+      font-size: 0.65rem;
+      font-weight: 600;
+      letter-spacing: 0.15em;
+      color: var(--gold);
+      margin-bottom: 6px;
+    }
+
+    .element-name {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.1rem;
+      font-weight: 600;
+      line-height: 1.3;
+    }
+
+    /* ═══════════════════════════════════════════════════════════════
+       ABOUT SECTION
+    ═══════════════════════════════════════════════════════════════ */
+    .about-section {
+      padding: 80px 20px;
+      background: var(--bg-dark);
+    }
+
+    .about-content {
+      max-width: 700px;
+      margin: 0 auto;
+      text-align: center;
+    }
+
+    .about-text {
+      font-size: 1rem;
+      color: rgba(255, 255, 255, 0.6);
+      line-height: 1.8;
+      margin-bottom: 40px;
+    }
+
+    .stats-row {
+      display: flex;
+      justify-content: center;
+      gap: 50px;
+      flex-wrap: wrap;
+    }
+
+    .stat {
+      text-align: center;
+    }
+
+    .stat-value {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 2.5rem;
+      font-weight: 600;
+      color: var(--gold);
+    }
+
+    .stat-label {
+      font-size: 0.7rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    /* ═══════════════════════════════════════════════════════════════
+       FOOTER
+    ═══════════════════════════════════════════════════════════════ */
+    footer {
+      padding: 40px 20px;
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+      text-align: center;
+    }
+
+    .footer-text {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-bottom: 16px;
+    }
+
+    .credit-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      color: rgba(255, 255, 255, 0.4);
+      text-decoration: none;
+      font-size: 0.75rem;
+      transition: color 0.3s;
+    }
+
+    .credit-link:hover {
+      color: var(--gold);
+    }
+
+    .google-logo {
+      width: 20px;
+      height: 20px;
+      border-radius: 4px;
+      background: linear-gradient(135deg, #4285f4, #34a853, #fbbc05, #ea4335);
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- ═══════════════════════════════════════════════════════════════
+       HERO SECTION
+  ═══════════════════════════════════════════════════════════════ -->
+  <section class="hero">
+    <div class="starfield">
+      <div class="stars"></div>
+      <div class="stars2"></div>
+      <div class="stars3"></div>
+    </div>
+    <div class="divine-light"></div>
+
+    <div class="hero-content">
+      <div class="book-label">O Livro da Sabedoria</div>
+      <h1 class="main-title">Jó</h1>
+      <p class="subtitle">Uma jornada interativa através do maior poema de sabedoria da Bíblia. Explore a estrutura, os
+        personagens e os temas teológicos.</p>
+
+      <blockquote class="verse-quote">
+        "Eu sei que o meu Redentor vive e que por fim se levantará sobre a terra."
+        <cite class="verse-ref">— Jó 19:25</cite>
+      </blockquote>
+
+      <a href="#elementos" class="cta-btn">
+        Explorar os 10 Elementos
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M5 12h14M12 5l7 7-7 7" />
+        </svg>
+      </a>
+    </div>
+
+    <div class="scroll-indicator">
+      <span>Role para baixo</span>
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M12 5v14M5 12l7 7 7-7" />
+      </svg>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════════════
+       ELEMENTS SECTION
+  ═══════════════════════════════════════════════════════════════ -->
+  <section class="elements-section" id="elementos">
+    <div class="section-header">
+      <div class="section-label">Visualizações Interativas</div>
+      <h2 class="section-title">10 Elementos para Explorar</h2>
+    </div>
+
+    <div class="elements-grid">
+      <a href="elementos/elemento1_mapa_estrutura.html" class="element-card">
+        <div class="element-icon">📜</div>
+        <div class="element-info">
+          <div class="element-number">01</div>
+          <div class="element-name">Estrutura do Livro</div>
+        </div>
+      </a>
+
+      <a href="elementos/elemento2_timeline.html" class="element-card">
+        <div class="element-icon">⏳</div>
+        <div class="element-info">
+          <div class="element-number">02</div>
+          <div class="element-name">Linha do Tempo</div>
+        </div>
+      </a>
+
+      <a href="elementos/elemento3_grafo.html" class="element-card">
+        <div class="element-icon">🔗</div>
+        <div class="element-info">
+          <div class="element-number">03</div>
+          <div class="element-name">Grafo de Relações</div>
+        </div>
+      </a>
+
+      <a href="elementos/elemento4_termometro.html" class="element-card">
+        <div class="element-icon">🌡️</div>
+        <div class="element-info">
+          <div class="element-number">04</div>
+          <div class="element-name">Termômetro Teológico</div>
+        </div>
+      </a>
+
+      <a href="elementos/elemento5_nuvem.html" class="element-card">
+        <div class="element-icon">☁️</div>
+        <div class="element-info">
+          <div class="element-number">05</div>
+          <div class="element-name">Nuvem de Palavras</div>
+        </div>
+      </a>
+
+      <a href="elementos/elemento6_escalada.html" class="element-card">
+        <div class="element-icon">📈</div>
+        <div class="element-info">
+          <div class="element-number">06</div>
+          <div class="element-name">Escalada do Conflito</div>
+        </div>
+      </a>
+
+      <a href="elementos/elemento7_criacao.html" class="element-card">
+        <div class="element-icon">🌍</div>
+        <div class="element-info">
+          <div class="element-number">07</div>
+          <div class="element-name">Mapa da Criação</div>
+        </div>
+      </a>
+
+      <a href="elementos/elemento8_ranking.html" class="element-card">
+        <div class="element-icon">🏆</div>
+        <div class="element-info">
+          <div class="element-number">08</div>
+          <div class="element-name">Quem Fala Mais</div>
+        </div>
+      </a>
+
+      <a href="elementos/elemento9_paciencia.html" class="element-card">
+        <div class="element-icon">🕊️</div>
+        <div class="element-info">
+          <div class="element-number">09</div>
+          <div class="element-name">Paciência de Jó</div>
+        </div>
+      </a>
+
+      <a href="elementos/elemento10_quiz.html" class="element-card">
+        <div class="element-icon">🎯</div>
+        <div class="element-info">
+          <div class="element-number">10</div>
+          <div class="element-name">Quiz Interativo</div>
+        </div>
+      </a>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════════════
+       ABOUT SECTION
+  ═══════════════════════════════════════════════════════════════ -->
+  <section class="about-section">
+    <div class="about-content">
+      <p class="about-text">
+        O livro de Jó é uma obra-prima da literatura sapiencial. Explore a jornada de um homem íntegro que enfrentou o
+        sofrimento inexplicável, questionou os céus, e encontrou Deus não através de respostas, mas de revelação.
+      </p>
+      <div class="stats-row">
+        <div class="stat">
+          <div class="stat-value">42</div>
+          <div class="stat-label">Capítulos</div>
+        </div>
+        <div class="stat">
+          <div class="stat-value">7</div>
+          <div class="stat-label">Personagens</div>
+        </div>
+        <div class="stat">
+          <div class="stat-value">1.070</div>
+          <div class="stat-label">Versículos</div>
+        </div>
+        <div class="stat">
+          <div class="stat-value">10</div>
+          <div class="stat-label">Elementos</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════════════
+       FOOTER
+  ═══════════════════════════════════════════════════════════════ -->
+  <footer>
+    <a href="../../index.html"
+      style="display: inline-flex; align-items: center; gap: 8px; color: var(--gold); text-decoration: none; font-size: 0.9rem; padding: 12px 24px; background: rgba(201, 162, 39, 0.1); border-radius: 100px; border: 1px solid rgba(201, 162, 39, 0.2); margin-bottom: 20px; transition: all 0.3s;">
+      ← Voltar ao Panorama Bíblico
+    </a>
+    <p class="footer-text">Baseado na Nova Almeida Atualizada (NAA)</p>
+    <a href="https://deepmind.google/" target="_blank" class="credit-link">
+      <div class="google-logo"></div>
+      Criado com ♥ usando Google Antigravity
+    </a>
+  </footer>
+
+</body>
+
+</html>

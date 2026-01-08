@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Paciência de Jó – Panorama de Jó</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@600;700&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0a0e17;
+            --bg-card: #1a1f2e;
+            --accent-blue: #60a5fa;
+            --accent-orange: #fb923c;
+            --accent-emerald: #34d399;
+            --accent-rose: #fb7185;
+            --text-primary: #f9fafb;
+            --text-secondary: #9ca3af;
+            --text-muted: #6b7280;
+            --border-subtle: rgba(255, 255, 255, 0.08);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+
+        .bg-pattern {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: radial-gradient(circle at 50% 50%, rgba(96, 165, 250, 0.08) 0%, transparent 50%);
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(96, 165, 250, 0.15);
+            color: var(--accent-blue);
+            padding: 8px 16px;
+            border-radius: 100px;
+            font-size: 12px;
+            font-weight: 500;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            margin-bottom: 16px;
+            border: 1px solid rgba(96, 165, 250, 0.2);
+        }
+
+        h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(1.8rem, 4vw, 2.8rem);
+            font-weight: 700;
+            margin-bottom: 12px;
+            background: linear-gradient(135deg, var(--text-primary), var(--accent-blue));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            font-size: 1rem;
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* Timeline */
+        .timeline-container {
+            background: var(--bg-card);
+            border-radius: 20px;
+            padding: 30px;
+            border: 1px solid var(--border-subtle);
+            margin-top: 30px;
+        }
+
+        .timeline-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .chapter-display {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .progress-bar {
+            flex: 1;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            margin: 0 20px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.5s, background 0.5s;
+        }
+
+        /* Patience meter */
+        .patience-section {
+            display: grid;
+            grid-template-columns: 1fr 200px;
+            gap: 30px;
+            align-items: center;
+        }
+
+        @media (max-width: 700px) {
+            .patience-section {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .meter-container {
+            height: 300px;
+            width: 80px;
+            margin: 0 auto;
+            background: linear-gradient(to top, #22c55e 0%, #eab308 50%, #ef4444 100%);
+            border-radius: 40px;
+            position: relative;
+            padding: 4px;
+        }
+
+        .meter-inner {
+            background: var(--bg-primary);
+            border-radius: 36px;
+            position: absolute;
+            top: 4px;
+            left: 4px;
+            right: 4px;
+            transition: height 0.5s;
+            bottom: 4px;
+        }
+
+        .meter-level {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            border-radius: 36px;
+            transition: height 0.5s, background 0.5s;
+        }
+
+        .meter-labels {
+            position: absolute;
+            right: 100px;
+            top: 0;
+            bottom: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            padding: 10px 0;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+        }
+
+        /* Event details */
+        .event-card {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 12px;
+            padding: 20px;
+            border-left: 4px solid var(--accent-blue);
+        }
+
+        .event-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .event-desc {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin-bottom: 12px;
+        }
+
+        .event-verse {
+            font-style: italic;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .event-ref {
+            margin-top: 8px;
+        }
+
+        .event-ref a {
+            color: var(--accent-blue);
+            text-decoration: none;
+            font-size: 0.8rem;
+        }
+
+        /* Navigation */
+        .timeline-nav {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 30px;
+        }
+
+        .nav-btn {
+            padding: 12px 24px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-subtle);
+            border-radius: 100px;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .nav-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-primary);
+        }
+
+        .nav-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .nav-btn.primary {
+            background: var(--accent-blue);
+            color: var(--bg-primary);
+            border-color: transparent;
+        }
+
+        /* Dots */
+        .timeline-dots {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 20px;
+        }
+
+        .dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .dot.active {
+            background: var(--accent-blue);
+            transform: scale(1.3);
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 50px;
+            padding-top: 30px;
+            border-top: 1px solid var(--border-subtle);
+        }
+
+        footer p {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--accent-blue);
+            text-decoration: none;
+            font-size: 0.9rem;
+            margin-top: 16px;
+            padding: 12px 24px;
+            background: rgba(96, 165, 250, 0.1);
+            border-radius: 100px;
+            border: 1px solid rgba(96, 165, 250, 0.2);
+            transition: all 0.3s;
+        }
+
+        .back-link:hover {
+            background: rgba(96, 165, 250, 0.2);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="bg-pattern"></div>
+    <div class="container">
+        <header>
+            <div class="badge">🕊️ Elemento 9 · Panorama de Jó</div>
+            <h1>A Paciência de Jó</h1>
+            <p class="subtitle">Acompanhe a resiliência e esperança de Jó ao longo da narrativa bíblica.</p>
+        </header>
+
+        <div class="timeline-container">
+            <div class="timeline-header">
+                <div class="chapter-display" id="chapter-display">Jó 1-2</div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progress-fill"></div>
+                </div>
+                <div id="patience-value" style="font-weight: 700; font-size: 1.2rem;">90%</div>
+            </div>
+
+            <div class="patience-section">
+                <div class="event-card" id="event-card"></div>
+                <div style="position: relative;">
+                    <div class="meter-container">
+                        <div class="meter-level" id="meter-level"></div>
+                    </div>
+                    <div class="meter-labels">
+                        <span>Esperança</span>
+                        <span>Neutro</span>
+                        <span>Desespero</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="timeline-dots" id="timeline-dots"></div>
+
+            <div class="timeline-nav">
+                <button class="nav-btn" id="btn-prev">← Anterior</button>
+                <button class="nav-btn primary" id="btn-next">Próximo →</button>
+            </div>
+        </div>
+
+        <footer>
+            <p>Baseado na Nova Almeida Atualizada (NAA)</p>
+            <a href="../index.html" class="back-link">← Voltar ao Panorama</a>
+            <a href="https://deepmind.google/" target="_blank"
+                style="display: inline-flex; align-items: center; gap: 8px; color: rgba(255,255,255,0.5); text-decoration: none; font-size: 0.75rem; margin-top: 12px; transition: all 0.3s;">
+                <span
+                    style="width: 18px; height: 18px; border-radius: 4px; background: linear-gradient(135deg, #4285f4, #34a853, #fbbc05, #ea4335);"></span>
+                Criado com ♥ usando Google Antigravity
+            </a>
+        </footer>
+    </div>
+
+    <script>
+        const getBibleLink = (ch) => `https://www.bibliaonline.com.br/naa/j%C3%B3/${ch}`;
+
+        const events = [
+            {
+                chapter: '1-2', patience: 90, title: 'Integridade Inicial', color: '#22c55e',
+                desc: 'Jó perde tudo — filhos, bens, saúde — mas não peca com seus lábios.',
+                verse: '"O Senhor o deu e o Senhor o tomou; bendito seja o nome do Senhor!"'
+            },
+            {
+                chapter: '3', patience: 15, title: 'O Grande Lamento', color: '#ef4444',
+                desc: 'Jó amaldiçoa o dia em que nasceu e questiona por que continuar vivo.',
+                verse: '"Pereça o dia em que nasci!"'
+            },
+            {
+                chapter: '6-7', patience: 25, title: 'Defesa da Angústia', color: '#f97316',
+                desc: 'Jó justifica seu lamento e questiona por que Deus o persegue.',
+                verse: '"Por que me puseste por alvo?"'
+            },
+            {
+                chapter: '9-10', patience: 30, title: 'Impossível Contender', color: '#f97316',
+                desc: 'Jó reconhece a grandeza de Deus mas sente-se incapaz de contestá-Lo.',
+                verse: '"Como pode o mortal ser justo diante de Deus?"'
+            },
+            {
+                chapter: '13', patience: 55, title: 'Fé Desafiadora', color: '#eab308',
+                desc: 'Mesmo em desespero, Jó declara confiança em Deus.',
+                verse: '"Ainda que ele me mate, nele esperarei."'
+            },
+            {
+                chapter: '16-17', patience: 40, title: 'Clamor por Testemunha', color: '#f97316',
+                desc: 'Jó clama por alguém que advogue por ele no céu.',
+                verse: '"Mesmo agora a minha testemunha está nos céus."'
+            },
+            {
+                chapter: '19', patience: 85, title: 'O Redentor Vive', color: '#22c55e',
+                desc: 'O pico de esperança: Jó declara sua fé no Redentor vivo.',
+                verse: '"Eu sei que o meu Redentor vive!"'
+            },
+            {
+                chapter: '23', patience: 50, title: 'Anseio por Deus', color: '#eab308',
+                desc: 'Jó deseja encontrar Deus para apresentar seu caso.',
+                verse: '"Oh, se eu soubesse onde encontrá-lo!"'
+            },
+            {
+                chapter: '29-31', patience: 60, title: 'Defesa Final', color: '#84cc16',
+                desc: 'Jó jura sua inocência e desafia Deus a responder.',
+                verse: '"Que o Todo-Poderoso me responda!"'
+            },
+            {
+                chapter: '38-41', patience: 80, title: 'Deus Responde', color: '#22c55e',
+                desc: 'Deus fala do redemoinho, revelando Sua sabedoria na criação.',
+                verse: '"Onde você estava quando lancei os fundamentos da terra?"'
+            },
+            {
+                chapter: '42', patience: 95, title: 'Restauração', color: '#22c55e',
+                desc: 'Jó reconhece a Deus, arrepende-se e é restaurado em dobro.',
+                verse: '"Eu te conhecia só de ouvir, mas agora meus olhos te veem."'
+            }
+        ];
+
+        let currentIndex = 0;
+
+        const chapterDisplay = document.getElementById('chapter-display');
+        const progressFill = document.getElementById('progress-fill');
+        const patienceValue = document.getElementById('patience-value');
+        const meterLevel = document.getElementById('meter-level');
+        const eventCard = document.getElementById('event-card');
+        const dotsContainer = document.getElementById('timeline-dots');
+        const btnPrev = document.getElementById('btn-prev');
+        const btnNext = document.getElementById('btn-next');
+
+        // Create dots
+        events.forEach((_, i) => {
+            const dot = document.createElement('div');
+            dot.className = 'dot' + (i === 0 ? ' active' : '');
+            dot.addEventListener('click', () => goTo(i));
+            dotsContainer.appendChild(dot);
+        });
+
+        function updateDisplay() {
+            const event = events[currentIndex];
+            const firstCh = event.chapter.split('-')[0];
+
+            chapterDisplay.textContent = `Jó ${event.chapter}`;
+            progressFill.style.width = ((currentIndex + 1) / events.length * 100) + '%';
+            progressFill.style.background = event.color;
+            patienceValue.textContent = event.patience + '%';
+            patienceValue.style.color = event.color;
+
+            meterLevel.style.height = event.patience + '%';
+            meterLevel.style.background = event.color;
+
+            eventCard.style.borderLeftColor = event.color;
+            eventCard.innerHTML = `
+        <div class="event-title" style="color: ${event.color};">${event.title}</div>
+        <div class="event-desc">${event.desc}</div>
+        <div class="event-verse">${event.verse}</div>
+        <div class="event-ref"><a href="${getBibleLink(firstCh)}" target="_blank">Ler Jó ${event.chapter}</a></div>
+      `;
+
+            // Update dots
+            document.querySelectorAll('.dot').forEach((dot, i) => {
+                dot.classList.toggle('active', i === currentIndex);
+            });
+
+            // Update buttons
+            btnPrev.disabled = currentIndex === 0;
+            btnNext.disabled = currentIndex === events.length - 1;
+        }
+
+        function goTo(index) {
+            currentIndex = index;
+            updateDisplay();
+        }
+
+        btnPrev.addEventListener('click', () => {
+            if (currentIndex > 0) goTo(currentIndex - 1);
+        });
+
+        btnNext.addEventListener('click', () => {
+            if (currentIndex < events.length - 1) goTo(currentIndex + 1);
+        });
+
+        updateDisplay();
+    </script>
+</body>
+
+</html>

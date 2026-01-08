@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Quiz Interativo – Panorama de Jó</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@600;700&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0a0e17;
+            --bg-card: #1a1f2e;
+            --accent-gold: #d4a853;
+            --accent-blue: #60a5fa;
+            --accent-emerald: #34d399;
+            --accent-rose: #fb7185;
+            --accent-purple: #a78bfa;
+            --accent-orange: #fb923c;
+            --text-primary: #f9fafb;
+            --text-secondary: #9ca3af;
+            --text-muted: #6b7280;
+            --border-subtle: rgba(255, 255, 255, 0.08);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+
+        .bg-pattern {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: radial-gradient(circle at 30% 30%, rgba(212, 168, 83, 0.08) 0%, transparent 50%),
+                radial-gradient(circle at 70% 70%, rgba(52, 211, 153, 0.06) 0%, transparent 50%);
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(212, 168, 83, 0.15);
+            color: var(--accent-gold);
+            padding: 8px 16px;
+            border-radius: 100px;
+            font-size: 12px;
+            font-weight: 500;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            margin-bottom: 16px;
+            border: 1px solid rgba(212, 168, 83, 0.2);
+        }
+
+        h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(1.8rem, 4vw, 2.8rem);
+            font-weight: 700;
+            margin-bottom: 12px;
+            background: linear-gradient(135deg, var(--text-primary), var(--accent-gold));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            font-size: 1rem;
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* Quiz selector */
+        .quiz-selector {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .quiz-option {
+            background: var(--bg-card);
+            border: 2px solid var(--border-subtle);
+            border-radius: 16px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+        }
+
+        .quiz-option:hover {
+            border-color: var(--accent-gold);
+            transform: translateY(-4px);
+        }
+
+        .quiz-option.active {
+            border-color: var(--accent-gold);
+            background: rgba(212, 168, 83, 0.1);
+        }
+
+        .quiz-icon {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+
+        .quiz-name {
+            font-weight: 600;
+            font-size: 0.95rem;
+            margin-bottom: 4px;
+        }
+
+        .quiz-desc {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .quiz-count {
+            font-size: 0.7rem;
+            color: var(--accent-gold);
+            margin-top: 8px;
+        }
+
+        /* Progress */
+        .progress-container {
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .progress-container.visible {
+            display: block;
+        }
+
+        .progress-bar {
+            height: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--accent-gold);
+            border-radius: 4px;
+            transition: width 0.5s;
+        }
+
+        .progress-text {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-top: 8px;
+        }
+
+        /* Question card */
+        .question-card {
+            background: var(--bg-card);
+            border-radius: 20px;
+            padding: 30px;
+            border: 1px solid var(--border-subtle);
+            display: none;
+        }
+
+        .question-card.visible {
+            display: block;
+        }
+
+        .question-number {
+            font-size: 0.8rem;
+            color: var(--accent-gold);
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        .question-text {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 24px;
+            line-height: 1.4;
+        }
+
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .option {
+            padding: 16px 20px;
+            border-radius: 12px;
+            border: 2px solid var(--border-subtle);
+            background: rgba(255, 255, 255, 0.02);
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 0.95rem;
+        }
+
+        .option:hover {
+            border-color: var(--accent-gold);
+            background: rgba(212, 168, 83, 0.1);
+        }
+
+        .option.correct {
+            border-color: var(--accent-emerald);
+            background: rgba(52, 211, 153, 0.2);
+        }
+
+        .option.incorrect {
+            border-color: var(--accent-rose);
+            background: rgba(251, 113, 133, 0.2);
+        }
+
+        .option.disabled {
+            pointer-events: none;
+        }
+
+        .feedback {
+            margin-top: 20px;
+            padding: 16px;
+            border-radius: 12px;
+            display: none;
+            font-size: 0.9rem;
+        }
+
+        .feedback.visible {
+            display: block;
+        }
+
+        .feedback.correct {
+            background: rgba(52, 211, 153, 0.15);
+            border-left: 4px solid var(--accent-emerald);
+        }
+
+        .feedback.incorrect {
+            background: rgba(251, 113, 133, 0.15);
+            border-left: 4px solid var(--accent-rose);
+        }
+
+        .nav-container {
+            display: flex;
+            justify-content: center;
+            margin-top: 24px;
+        }
+
+        .next-btn {
+            padding: 14px 32px;
+            background: var(--accent-gold);
+            color: var(--bg-primary);
+            border: none;
+            border-radius: 100px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: none;
+        }
+
+        .next-btn.visible {
+            display: inline-block;
+        }
+
+        .next-btn:hover {
+            transform: scale(1.05);
+        }
+
+        /* Results */
+        .results-card {
+            background: var(--bg-card);
+            border-radius: 20px;
+            padding: 40px;
+            border: 1px solid var(--border-subtle);
+            text-align: center;
+            display: none;
+        }
+
+        .results-card.visible {
+            display: block;
+        }
+
+        .results-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+        }
+
+        .results-score {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .results-text {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            margin-bottom: 24px;
+        }
+
+        .restart-btn,
+        .back-to-selector {
+            padding: 14px 32px;
+            background: var(--accent-gold);
+            color: var(--bg-primary);
+            border: none;
+            border-radius: 100px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin: 8px;
+        }
+
+        .back-to-selector {
+            background: transparent;
+            border: 2px solid var(--accent-gold);
+            color: var(--accent-gold);
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 50px;
+            padding-top: 30px;
+            border-top: 1px solid var(--border-subtle);
+        }
+
+        footer p {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+
+        .credit {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            opacity: 0.7;
+            margin-top: 12px;
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--accent-gold);
+            text-decoration: none;
+            font-size: 0.9rem;
+            margin-top: 16px;
+            padding: 12px 24px;
+            background: rgba(212, 168, 83, 0.1);
+            border-radius: 100px;
+            border: 1px solid rgba(212, 168, 83, 0.2);
+            transition: all 0.3s;
+        }
+
+        .back-link:hover {
+            background: rgba(212, 168, 83, 0.2);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="bg-pattern"></div>
+    <div class="container">
+        <header>
+            <div class="badge">🎯 Elemento 10 · Panorama de Jó</div>
+            <h1>Quiz Interativo</h1>
+            <p class="subtitle">Escolha uma seção do livro ou faça o quiz geral para testar seus conhecimentos.</p>
+        </header>
+
+        <div class="quiz-selector" id="quiz-selector">
+            <div class="quiz-option" data-quiz="geral">
+                <div class="quiz-icon">📚</div>
+                <div class="quiz-name">Quiz Geral</div>
+                <div class="quiz-desc">Todo o livro de Jó</div>
+                <div class="quiz-count">12 perguntas</div>
+            </div>
+            <div class="quiz-option" data-quiz="prologo">
+                <div class="quiz-icon">📖</div>
+                <div class="quiz-name">Prólogo</div>
+                <div class="quiz-desc">Capítulos 1-2</div>
+                <div class="quiz-count">5 perguntas</div>
+            </div>
+            <div class="quiz-option" data-quiz="dialogos">
+                <div class="quiz-icon">💬</div>
+                <div class="quiz-name">Diálogos</div>
+                <div class="quiz-desc">Capítulos 3-31</div>
+                <div class="quiz-count">6 perguntas</div>
+            </div>
+            <div class="quiz-option" data-quiz="eliu">
+                <div class="quiz-icon">🗣️</div>
+                <div class="quiz-name">Eliú</div>
+                <div class="quiz-desc">Capítulos 32-37</div>
+                <div class="quiz-count">4 perguntas</div>
+            </div>
+            <div class="quiz-option" data-quiz="deus">
+                <div class="quiz-icon">⚡</div>
+                <div class="quiz-name">Discursos de Deus</div>
+                <div class="quiz-desc">Capítulos 38-41</div>
+                <div class="quiz-count">5 perguntas</div>
+            </div>
+            <div class="quiz-option" data-quiz="epilogo">
+                <div class="quiz-icon">🌅</div>
+                <div class="quiz-name">Epílogo</div>
+                <div class="quiz-desc">Capítulo 42</div>
+                <div class="quiz-count">4 perguntas</div>
+            </div>
+        </div>
+
+        <div class="progress-container" id="progress-container">
+            <div class="progress-bar">
+                <div class="progress-fill" id="progress-fill"></div>
+            </div>
+            <div class="progress-text">
+                <span>Pergunta <span id="current-q">1</span> de <span id="total-q">10</span></span>
+                <span id="score-display">Pontuação: 0</span>
+            </div>
+        </div>
+
+        <div class="question-card" id="question-card">
+            <div class="question-number" id="question-number"></div>
+            <div class="question-text" id="question-text"></div>
+            <div class="options" id="options"></div>
+            <div class="feedback" id="feedback"></div>
+            <div class="nav-container">
+                <button class="next-btn" id="next-btn">Próxima Pergunta →</button>
+            </div>
+        </div>
+
+        <div class="results-card" id="results-card">
+            <div class="results-icon" id="results-icon"></div>
+            <div class="results-score" id="results-score"></div>
+            <div class="results-text" id="results-text"></div>
+            <button class="restart-btn" id="restart-btn">Tentar Novamente</button>
+            <button class="back-to-selector" id="back-to-selector">← Escolher Outro Quiz</button>
+        </div>
+
+        <footer>
+            <p>Baseado na Nova Almeida Atualizada (NAA)</p>
+            <a href="../index.html" class="back-link">← Voltar ao Panorama</a>
+            <a href="https://deepmind.google/" target="_blank" class="credit"
+                style="display: inline-flex; align-items: center; gap: 8px; color: rgba(255,255,255,0.5); text-decoration: none;">
+                <span
+                    style="width: 18px; height: 18px; border-radius: 4px; background: linear-gradient(135deg, #4285f4, #34a853, #fbbc05, #ea4335);"></span>
+                Criado com ♥ usando Google Antigravity
+            </a>
+        </footer>
+    </div>
+
+    <script>
+        // Quiz banks by section
+        const quizBanks = {
+            prologo: [
+                { q: 'Em que terra Jó vivia?', options: ['Egito', 'Uz', 'Canaã', 'Babilônia'], correct: 1, feedback: 'Jó vivia na terra de Uz (Jó 1:1).' },
+                { q: 'Quantos filhos Jó tinha no início?', options: ['7 filhos e 3 filhas', '10 filhos', '5 filhos e 5 filhas', '12 filhos'], correct: 0, feedback: 'Jó tinha 7 filhos e 3 filhas, totalizando 10 (Jó 1:2).' },
+                { q: 'Quem pediu permissão a Deus para testar Jó?', options: ['Um anjo', 'Satanás', 'Os amigos', 'Eliú'], correct: 1, feedback: 'Satanás pediu permissão para testar Jó (Jó 1:6-12).' },
+                { q: 'O que Jó disse após perder tudo?', options: ['"Por que, Senhor?"', '"Pequei contra ti"', '"Bendito seja o nome do Senhor"', '"Não entendo"'], correct: 2, feedback: '"O Senhor o deu e o Senhor o tomou; bendito seja o nome do Senhor!" (Jó 1:21)' },
+                { q: 'O que a esposa de Jó sugeriu a ele?', options: ['Orar mais', 'Amaldiçoar a Deus e morrer', 'Pedir perdão', 'Fugir'], correct: 1, feedback: 'A esposa disse: "Amaldiçoa a Deus e morre!" (Jó 2:9)' }
+            ],
+            dialogos: [
+                { q: 'Quem são os três amigos de Jó?', options: ['Abraão, Isaque e Jacó', 'Elifaz, Bildade e Zofar', 'Moisés, Arão e Josué', 'Pedro, Tiago e João'], correct: 1, feedback: 'Os três amigos são Elifaz, Bildade e Zofar.' },
+                { q: 'O que Jó amaldiçoou no capítulo 3?', options: ['Seus amigos', 'A Deus', 'O dia em que nasceu', 'Sua casa'], correct: 2, feedback: 'Jó amaldiçoou o dia em que nasceu (Jó 3:1-3).' },
+                { q: 'Qual versículo diz "Eu sei que o meu Redentor vive"?', options: ['Jó 1:21', 'Jó 13:15', 'Jó 19:25', 'Jó 42:5'], correct: 2, feedback: 'Este versículo está em Jó 19:25.' },
+                { q: 'O que Jó diz em 13:15?', options: ['"Pequei contra ti"', '"Ainda que ele me mate, nele esperarei"', '"Por que me abandonaste?"', '"Bendito seja"'], correct: 1, feedback: '"Ainda que ele me mate, nele esperarei" (Jó 13:15).' },
+                { q: 'Como Jó descreve a sabedoria no capítulo 28?', options: ['Fácil de encontrar', 'Mais valiosa que ouro', 'Inútil', 'Perigosa'], correct: 1, feedback: 'A sabedoria é mais valiosa que ouro e pedras preciosas (Jó 28).' },
+                { q: 'O que Jó faz nos capítulos 29-31?', options: ['Pede perdão', 'Jura sua inocência', 'Amaldiçoa os amigos', 'Louva a Deus'], correct: 1, feedback: 'Jó faz sua defesa final jurando sua inocência (Jó 31).' }
+            ],
+            eliu: [
+                { q: 'Quem é Eliú?', options: ['Um dos três amigos', 'Um jovem que intervém após os amigos', 'Um anjo', 'O servo de Jó'], correct: 1, feedback: 'Eliú é o jovem que fala após os três amigos ficarem em silêncio (Jó 32).' },
+                { q: 'Por que Eliú esperou para falar?', options: ['Tinha medo', 'Era mais jovem que os outros', 'Não sabia o que dizer', 'Estava doente'], correct: 1, feedback: 'Eliú era mais jovem e respeitou os mais velhos (Jó 32:4-6).' },
+                { q: 'O que Eliú propõe sobre o sofrimento?', options: ['É sempre castigo', 'É disciplina pedagógica', 'Não tem sentido', 'É acidental'], correct: 1, feedback: 'Eliú propõe que Deus usa o sofrimento para ensinar (Jó 33:14-30).' },
+                { q: 'Em quantos capítulos Eliú fala?', options: ['2', '4', '6', '8'], correct: 2, feedback: 'Eliú fala nos capítulos 32-37, totalizando 6 capítulos.' }
+            ],
+            deus: [
+                { q: 'De onde Deus responde a Jó?', options: ['Do templo', 'De uma nuvem', 'Do meio do redemoinho', 'Do céu'], correct: 2, feedback: 'Deus respondeu do meio de um redemoinho (Jó 38:1).' },
+                { q: 'Qual a primeira pergunta de Deus a Jó?', options: ['"Por que você pecou?"', '"Onde você estava quando lancei os fundamentos da terra?"', '"Você me ama?"', '"Por que você duvida?"'], correct: 1, feedback: '"Onde você estava quando lancei os fundamentos da terra?" (Jó 38:4)' },
+                { q: 'Que animal NÃO é mencionado nos discursos de Deus?', options: ['Leviatã', 'Beemote', 'Águia', 'Elefante'], correct: 3, feedback: 'O elefante não é mencionado. Leviatã, Beemote e águia são citados.' },
+                { q: 'O que representa o Leviatã?', options: ['Um pássaro', 'Uma criatura marinha poderosa', 'Um anjo', 'Uma estrela'], correct: 1, feedback: 'O Leviatã é uma criatura marinha indomável (Jó 41).' },
+                { q: 'O que Deus demonstra através da criação?', options: ['Sua ira', 'Sua sabedoria e poder', 'Sua indiferença', 'Sua tristeza'], correct: 1, feedback: 'Deus revela Sua sabedoria e poder através da criação (Jó 38-41).' }
+            ],
+            epilogo: [
+                { q: 'O que Jó diz em 42:5?', options: ['"Pequei contra ti"', '"Eu te conhecia só de ouvir, mas agora meus olhos te veem"', '"Por que me abandonaste?"', '"Bendito seja"'], correct: 1, feedback: '"Eu te conhecia só de ouvir, mas agora meus olhos te veem" (Jó 42:5).' },
+                { q: 'O que acontece com Jó no final?', options: ['Morre de doença', 'É restaurado em dobro', 'Vai para o exílio', 'Perde a fé'], correct: 1, feedback: 'Deus restaurou Jó e deu-lhe o dobro (Jó 42:10).' },
+                { q: 'O que Deus ordena aos amigos de Jó?', options: ['Fugir', 'Oferecer sacrifícios e pedir que Jó ore por eles', 'Ficar em silêncio', 'Construir um templo'], correct: 1, feedback: 'Deus ordena sacrifícios e que Jó interceda por eles (Jó 42:7-9).' },
+                { q: 'Quantos anos Jó viveu após sua restauração?', options: ['70 anos', '100 anos', '140 anos', '200 anos'], correct: 2, feedback: 'Jó viveu mais 140 anos após sua restauração (Jó 42:16).' }
+            ],
+            geral: [] // Will be populated from all sections
+        };
+
+        // Populate general quiz with random questions from all sections
+        quizBanks.geral = [
+            ...quizBanks.prologo.slice(0, 2),
+            ...quizBanks.dialogos.slice(0, 3),
+            ...quizBanks.eliu.slice(0, 2),
+            ...quizBanks.deus.slice(0, 3),
+            ...quizBanks.epilogo.slice(0, 2)
+        ];
+
+        let currentQuiz = null;
+        let currentQuestions = [];
+        let currentQuestion = 0;
+        let score = 0;
+        let answered = false;
+
+        const quizSelector = document.getElementById('quiz-selector');
+        const progressContainer = document.getElementById('progress-container');
+        const questionCard = document.getElementById('question-card');
+        const resultsCard = document.getElementById('results-card');
+
+        // Quiz selection
+        document.querySelectorAll('.quiz-option').forEach(option => {
+            option.addEventListener('click', () => {
+                const quizId = option.dataset.quiz;
+                startQuiz(quizId);
+            });
+        });
+
+        function startQuiz(quizId) {
+            currentQuiz = quizId;
+            currentQuestions = [...quizBanks[quizId]];
+            currentQuestion = 0;
+            score = 0;
+            answered = false;
+
+            quizSelector.style.display = 'none';
+            progressContainer.classList.add('visible');
+            questionCard.classList.add('visible');
+            resultsCard.classList.remove('visible');
+
+            document.getElementById('total-q').textContent = currentQuestions.length;
+            document.getElementById('score-display').textContent = 'Pontuação: 0';
+
+            renderQuestion();
+        }
+
+        function renderQuestion() {
+            const q = currentQuestions[currentQuestion];
+            answered = false;
+
+            document.getElementById('current-q').textContent = currentQuestion + 1;
+            document.getElementById('progress-fill').style.width = ((currentQuestion) / currentQuestions.length * 100) + '%';
+
+            document.getElementById('question-number').textContent = `Pergunta ${currentQuestion + 1}`;
+            document.getElementById('question-text').textContent = q.q;
+
+            const optionsContainer = document.getElementById('options');
+            optionsContainer.innerHTML = '';
+            q.options.forEach((opt, i) => {
+                const optEl = document.createElement('div');
+                optEl.className = 'option';
+                optEl.textContent = opt;
+                optEl.addEventListener('click', () => selectOption(i));
+                optionsContainer.appendChild(optEl);
+            });
+
+            document.getElementById('feedback').classList.remove('visible', 'correct', 'incorrect');
+            document.getElementById('next-btn').classList.remove('visible');
+        }
+
+        function selectOption(index) {
+            if (answered) return;
+            answered = true;
+
+            const q = currentQuestions[currentQuestion];
+            const options = document.querySelectorAll('.option');
+
+            options.forEach((opt, i) => {
+                opt.classList.add('disabled');
+                if (i === q.correct) opt.classList.add('correct');
+                if (i === index && i !== q.correct) opt.classList.add('incorrect');
+            });
+
+            const feedback = document.getElementById('feedback');
+            if (index === q.correct) {
+                score++;
+                document.getElementById('score-display').textContent = `Pontuação: ${score}`;
+                feedback.className = 'feedback visible correct';
+                feedback.innerHTML = `✅ Correto! ${q.feedback}`;
+            } else {
+                feedback.className = 'feedback visible incorrect';
+                feedback.innerHTML = `❌ Incorreto. ${q.feedback}`;
+            }
+
+            const nextBtn = document.getElementById('next-btn');
+            nextBtn.classList.add('visible');
+            nextBtn.textContent = currentQuestion === currentQuestions.length - 1 ? 'Ver Resultado' : 'Próxima Pergunta →';
+        }
+
+        document.getElementById('next-btn').addEventListener('click', () => {
+            currentQuestion++;
+            if (currentQuestion < currentQuestions.length) {
+                renderQuestion();
+            } else {
+                showResults();
+            }
+        });
+
+        function showResults() {
+            questionCard.classList.remove('visible');
+            progressContainer.classList.remove('visible');
+            resultsCard.classList.add('visible');
+
+            const percent = Math.round((score / currentQuestions.length) * 100);
+            document.getElementById('results-score').textContent = `${score}/${currentQuestions.length}`;
+
+            let icon, text;
+            if (percent === 100) { icon = '🏆'; text = 'Perfeito! Você domina esta seção!'; }
+            else if (percent >= 80) { icon = '⭐'; text = 'Excelente! Conhecimento sólido!'; }
+            else if (percent >= 60) { icon = '👍'; text = 'Bom trabalho! Continue estudando!'; }
+            else { icon = '📚'; text = 'Vale a pena revisar esta seção!'; }
+
+            document.getElementById('results-icon').textContent = icon;
+            document.getElementById('results-text').textContent = text;
+        }
+
+        document.getElementById('restart-btn').addEventListener('click', () => {
+            startQuiz(currentQuiz);
+        });
+
+        document.getElementById('back-to-selector').addEventListener('click', () => {
+            resultsCard.classList.remove('visible');
+            quizSelector.style.display = 'grid';
+        });
+    </script>
+</body>
+
+</html>

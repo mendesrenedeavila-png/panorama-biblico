@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Quem Fala Mais – Panorama de Jó</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@600;700&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0a0e17;
+            --bg-card: #1a1f2e;
+            --accent-gold: #d4a853;
+            --accent-blue: #60a5fa;
+            --accent-orange: #fb923c;
+            --accent-purple: #a78bfa;
+            --accent-rose: #fb7185;
+            --accent-cyan: #22d3ee;
+            --accent-emerald: #34d399;
+            --text-primary: #f9fafb;
+            --text-secondary: #9ca3af;
+            --text-muted: #6b7280;
+            --border-subtle: rgba(255, 255, 255, 0.08);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+
+        .bg-pattern {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: radial-gradient(circle at 30% 70%, rgba(212, 168, 83, 0.08) 0%, transparent 50%),
+                radial-gradient(circle at 70% 30%, rgba(96, 165, 250, 0.06) 0%, transparent 50%);
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(212, 168, 83, 0.15);
+            color: var(--accent-gold);
+            padding: 8px 16px;
+            border-radius: 100px;
+            font-size: 12px;
+            font-weight: 500;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            margin-bottom: 16px;
+            border: 1px solid rgba(212, 168, 83, 0.2);
+        }
+
+        h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(1.8rem, 4vw, 2.8rem);
+            font-weight: 700;
+            margin-bottom: 12px;
+            background: linear-gradient(135deg, var(--text-primary), var(--accent-gold));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            font-size: 1rem;
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* Ranking container */
+        .ranking-container {
+            background: var(--bg-card);
+            border-radius: 20px;
+            padding: 30px;
+            border: 1px solid var(--border-subtle);
+            margin-top: 30px;
+        }
+
+        .ranking-item {
+            display: grid;
+            grid-template-columns: 50px 120px 1fr 80px;
+            align-items: center;
+            gap: 20px;
+            padding: 20px 0;
+            border-bottom: 1px solid var(--border-subtle);
+        }
+
+        .ranking-item:last-child {
+            border-bottom: none;
+        }
+
+        .rank {
+            font-size: 1.8rem;
+            font-weight: 700;
+            text-align: center;
+        }
+
+        .rank-1 {
+            color: #ffd700;
+        }
+
+        .rank-2 {
+            color: #c0c0c0;
+        }
+
+        .rank-3 {
+            color: #cd7f32;
+        }
+
+        .speaker-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .speaker-avatar {
+            width: 45px;
+            height: 45px;
+            min-width: 45px;
+            min-height: 45px;
+            flex-shrink: 0;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: var(--bg-primary);
+        }
+
+        .speaker-avatar-img {
+            background-size: cover;
+            background-position: center;
+        }
+
+        .speaker-name {
+            font-weight: 600;
+        }
+
+        .speaker-role {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .bar-container {
+            position: relative;
+            height: 30px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            overflow: hidden;
+        }
+
+        .bar {
+            height: 100%;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            padding-left: 12px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--bg-primary);
+            transition: width 1s ease-out;
+        }
+
+        .chapter-count {
+            font-size: 1.2rem;
+            font-weight: 700;
+            text-align: right;
+        }
+
+        /* Stats row */
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .stat-card {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid var(--border-subtle);
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            margin-top: 4px;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 50px;
+            padding-top: 30px;
+            border-top: 1px solid var(--border-subtle);
+        }
+
+        footer p {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--accent-gold);
+            text-decoration: none;
+            font-size: 0.9rem;
+            margin-top: 16px;
+            padding: 12px 24px;
+            background: rgba(212, 168, 83, 0.1);
+            border-radius: 100px;
+            border: 1px solid rgba(212, 168, 83, 0.2);
+            transition: all 0.3s;
+        }
+
+        .back-link:hover {
+            background: rgba(212, 168, 83, 0.2);
+        }
+
+        @media (max-width: 700px) {
+            .ranking-item {
+                grid-template-columns: 40px 1fr 60px;
+            }
+
+            .bar-container {
+                display: none;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="bg-pattern"></div>
+    <div class="container">
+        <header>
+            <div class="badge">🏆 Elemento 8 · Panorama de Jó</div>
+            <h1>Quem Fala Mais</h1>
+            <p class="subtitle">Ranking dos personagens por quantidade de capítulos em que falam no livro de Jó.</p>
+        </header>
+
+        <div class="ranking-container" id="ranking"></div>
+
+        <div class="stats-row">
+            <div class="stat-card">
+                <div class="stat-value" style="color: var(--accent-blue);">42</div>
+                <div class="stat-label">Capítulos totais</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" style="color: var(--accent-gold);">7</div>
+                <div class="stat-label">Personagens</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" style="color: var(--accent-emerald);">55%</div>
+                <div class="stat-label">Falas de Jó</div>
+            </div>
+        </div>
+
+        <footer>
+            <p>Baseado na Nova Almeida Atualizada (NAA)</p>
+            <a href="../index.html" class="back-link">← Voltar ao Panorama</a>
+            <a href="https://deepmind.google/" target="_blank"
+                style="display: inline-flex; align-items: center; gap: 8px; color: rgba(255,255,255,0.5); text-decoration: none; font-size: 0.75rem; margin-top: 12px;">
+                <span
+                    style="width: 18px; height: 18px; border-radius: 4px; background: linear-gradient(135deg, #4285f4, #34a853, #fbbc05, #ea4335);"></span>
+                Criado com ♥ usando Google Antigravity
+            </a>
+        </footer>
+    </div>
+
+    <script>
+        const speakers = [
+            { name: 'Jó', role: 'Protagonista', color: '#60a5fa', chapters: 23, image: '../imagens/JO.png' },
+            { name: 'Eliú', role: 'Jovem Sábio', color: '#22d3ee', chapters: 6, image: '../imagens/ELIU.png' },
+            { name: 'Deus', role: 'O Todo-Poderoso', color: '#34d399', chapters: 5, image: '../imagens/DEUS.png' },
+            { name: 'Elifaz', role: 'Amigo (Temanita)', color: '#fb923c', chapters: 4, image: '../imagens/ELIFAZ.png' },
+            { name: 'Bildade', role: 'Amigo (Suíta)', color: '#a78bfa', chapters: 3, image: '../imagens/BILDADE.png' },
+            { name: 'Narrador', role: 'Prólogo/Epílogo', color: '#d4a853', chapters: 3 },
+            { name: 'Zofar', role: 'Amigo (Naamatita)', color: '#fb7185', chapters: 2, image: '../imagens/ZOFAR.png' }
+        ];
+
+        const maxChapters = Math.max(...speakers.map(s => s.chapters));
+        const rankingContainer = document.getElementById('ranking');
+
+        speakers.forEach((speaker, index) => {
+            const item = document.createElement('div');
+            item.className = 'ranking-item';
+
+            const barWidth = (speaker.chapters / maxChapters) * 100;
+
+            // Use image if available
+            const avatarContent = speaker.image
+                ? `<div class="speaker-avatar speaker-avatar-img" style="background-image: url('${speaker.image}'); border: 2px solid ${speaker.color};"></div>`
+                : `<div class="speaker-avatar" style="background: ${speaker.color};">${speaker.name.charAt(0)}</div>`;
+
+            item.innerHTML = `
+        <div class="rank ${index < 3 ? 'rank-' + (index + 1) : ''}">${index + 1}º</div>
+        <div class="speaker-info">
+          ${avatarContent}
+          <div>
+            <div class="speaker-name">${speaker.name}</div>
+            <div class="speaker-role">${speaker.role}</div>
+          </div>
+        </div>
+        <div class="bar-container">
+          <div class="bar" style="width: 0%; background: ${speaker.color};">${speaker.chapters} caps</div>
+        </div>
+        <div class="chapter-count" style="color: ${speaker.color};">${speaker.chapters}</div>
+      `;
+
+            rankingContainer.appendChild(item);
+
+            // Animate bar after render
+            setTimeout(() => {
+                item.querySelector('.bar').style.width = barWidth + '%';
+            }, 100 + index * 100);
+        });
+    </script>
+</body>
+
+</html>

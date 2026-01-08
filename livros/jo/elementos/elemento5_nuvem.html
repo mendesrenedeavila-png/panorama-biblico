@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Nuvem de Palavras – Panorama de Jó</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@600;700&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0a0e17;
+            --bg-card: #1a1f2e;
+            --text-primary: #f9fafb;
+            --text-secondary: #9ca3af;
+            --text-muted: #6b7280;
+            --border-subtle: rgba(255, 255, 255, 0.08);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .bg-pattern {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: radial-gradient(circle at 30% 20%, rgba(167, 139, 250, 0.06) 0%, transparent 50%),
+                radial-gradient(circle at 70% 80%, rgba(96, 165, 250, 0.04) 0%, transparent 50%);
+        }
+
+        header {
+            text-align: center;
+            padding: 40px 20px 20px;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(167, 139, 250, 0.15);
+            color: #a78bfa;
+            padding: 8px 16px;
+            border-radius: 100px;
+            font-size: 12px;
+            font-weight: 500;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            margin-bottom: 16px;
+            border: 1px solid rgba(167, 139, 250, 0.2);
+        }
+
+        h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(1.8rem, 4vw, 2.8rem);
+            font-weight: 700;
+            margin-bottom: 12px;
+            background: linear-gradient(135deg, var(--text-primary), #a78bfa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            font-size: 1rem;
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* Character selector */
+        .character-tabs {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            padding: 20px;
+        }
+
+        .char-tab {
+            padding: 12px 24px;
+            border-radius: 100px;
+            border: 1px solid var(--border-subtle);
+            background: var(--bg-card);
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .char-tab:hover {
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .char-tab.active {
+            color: var(--bg-primary);
+            border-color: transparent;
+        }
+
+        .char-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        /* FULL WIDTH WORD CLOUD - NO CONTAINER */
+        .cloud-section {
+            width: 100%;
+            min-height: 55vh;
+            padding: 30px 5%;
+            position: relative;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: center;
+            gap: 15px 25px;
+        }
+
+        .word {
+            display: inline-block;
+            padding: 8px 18px;
+            border-radius: 30px;
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            cursor: pointer;
+            text-decoration: none;
+            white-space: nowrap;
+            animation: floatIn 0.5s ease-out forwards;
+            opacity: 0;
+            transform: scale(0.8) translateY(20px);
+        }
+
+        .word:hover {
+            transform: scale(1.15) !important;
+            filter: brightness(1.2);
+            box-shadow: 0 0 30px currentColor;
+        }
+
+        @keyframes floatIn {
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+
+        /* Character info */
+        .char-info {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 24px;
+            display: grid;
+            grid-template-columns: auto 1fr;
+            gap: 20px;
+            align-items: center;
+            background: var(--bg-card);
+            border-radius: 16px;
+            border: 1px solid var(--border-subtle);
+        }
+
+        .char-avatar {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--bg-primary);
+        }
+
+        .char-name {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .char-role {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+        }
+
+        .char-desc {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        .word-hint {
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid var(--border-subtle);
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        footer {
+            text-align: center;
+            padding: 30px 20px;
+            border-top: 1px solid var(--border-subtle);
+            margin-top: 30px;
+        }
+
+        footer p {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            margin-bottom: 8px;
+        }
+
+        .credit {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            opacity: 0.7;
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: #a78bfa;
+            text-decoration: none;
+            font-size: 0.9rem;
+            margin-top: 16px;
+            padding: 12px 24px;
+            background: rgba(167, 139, 250, 0.1);
+            border-radius: 100px;
+            border: 1px solid rgba(167, 139, 250, 0.2);
+            transition: all 0.3s;
+        }
+
+        .back-link:hover {
+            background: rgba(167, 139, 250, 0.2);
+        }
+
+        @media (max-width: 600px) {
+            .char-info {
+                grid-template-columns: 1fr;
+                text-align: center;
+                margin: 20px;
+            }
+
+            .char-avatar {
+                margin: 0 auto;
+            }
+
+            .cloud-section {
+                min-height: 45vh;
+                gap: 10px 15px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="bg-pattern"></div>
+
+    <header>
+        <div class="badge">☁️ Elemento 5 · Panorama de Jó</div>
+        <h1>Nuvem de Palavras</h1>
+        <p class="subtitle">Clique em qualquer palavra para ver o versículo correspondente na Bíblia.</p>
+    </header>
+
+    <div class="character-tabs" id="char-tabs"></div>
+    <div class="cloud-section" id="word-cloud"></div>
+    <div class="char-info" id="char-info"></div>
+
+    <footer>
+        <p>Termos extraídos por análise temática da Nova Almeida Atualizada (NAA)</p>
+        <a href="../index.html" class="back-link">← Voltar ao Panorama</a>
+        <a href="https://deepmind.google/" target="_blank" class="credit"
+            style="display: inline-flex; align-items: center; gap: 8px; color: rgba(255,255,255,0.5); text-decoration: none;">
+            <span
+                style="width: 18px; height: 18px; border-radius: 4px; background: linear-gradient(135deg, #4285f4, #34a853, #fbbc05, #ea4335);"></span>
+            Criado com ♥ usando Google Antigravity
+        </a>
+    </footer>
+
+    <script>
+        const getBibleLink = (ch, v) => `https://www.bibliaonline.com.br/naa/j%C3%B3/${ch}/${v || ''}`;
+
+        // Color palette for varied word colors
+        const colorPalettes = {
+            jo: ['#60a5fa', '#3b82f6', '#93c5fd', '#1d4ed8', '#7dd3fc', '#38bdf8'],
+            elifaz: ['#fb923c', '#f97316', '#fdba74', '#ea580c', '#fed7aa', '#c2410c'],
+            bildade: ['#a78bfa', '#8b5cf6', '#c4b5fd', '#7c3aed', '#ddd6fe', '#6d28d9'],
+            zofar: ['#fb7185', '#f43f5e', '#fda4af', '#e11d48', '#fecdd3', '#be123c'],
+            eliu: ['#22d3ee', '#06b6d4', '#67e8f9', '#0891b2', '#a5f3fc', '#0e7490'],
+            deus: ['#34d399', '#10b981', '#6ee7b7', '#059669', '#a7f3d0', '#047857']
+        };
+
+        // Characters data with word frequencies and verse references
+        const characters = [
+            {
+                id: 'jo', name: 'Jó', color: '#60a5fa', role: 'Protagonista',
+                desc: 'Homem íntegro e reto. Suas palavras refletem lamento, questionamento e, ao final, reconhecimento da grandeza divina.',
+                image: '../imagens/JO.png',
+                words: [
+                    { text: 'Deus', size: 5, ch: 9, v: 2 },
+                    { text: 'Sofrimento', size: 4.5, ch: 6, v: 2 },
+                    { text: 'Por quê?', size: 4.2, ch: 7, v: 20 },
+                    { text: 'Redentor', size: 4, ch: 19, v: 25 },
+                    { text: 'Inocência', size: 3.8, ch: 27, v: 6 },
+                    { text: 'Integridade', size: 3.5, ch: 31, v: 6 },
+                    { text: 'Justiça', size: 3.3, ch: 9, v: 15 },
+                    { text: 'Esperança', size: 3.2, ch: 13, v: 15 },
+                    { text: 'Testemunho', size: 3, ch: 16, v: 19 },
+                    { text: 'Amargura', size: 2.8, ch: 10, v: 1 },
+                    { text: 'Morte', size: 2.6, ch: 3, v: 11 },
+                    { text: 'Lamento', size: 2.5, ch: 3, v: 3 },
+                    { text: 'Alvo', size: 2.3, ch: 7, v: 20 },
+                    { text: 'Contender', size: 2.2, ch: 9, v: 3 },
+                    { text: 'Vida', size: 2, ch: 10, v: 12 }
+                ]
+            },
+            {
+                id: 'elifaz', name: 'Elifaz', color: '#fb923c', role: 'Amigo de Jó (Temanita)',
+                desc: 'Primeiro dos três amigos. Apela à experiência e tradição, defendendo a teologia da retribuição.',
+                image: '../imagens/ELIFAZ.png',
+                words: [
+                    { text: 'Pecado', size: 4.5, ch: 4, v: 17 },
+                    { text: 'Inocente', size: 4, ch: 4, v: 7 },
+                    { text: 'Ímpio', size: 3.8, ch: 15, v: 20 },
+                    { text: 'Castigo', size: 3.5, ch: 5, v: 17 },
+                    { text: 'Visão', size: 3.3, ch: 4, v: 13 },
+                    { text: 'Disciplina', size: 3, ch: 5, v: 17 },
+                    { text: 'Tradição', size: 2.8, ch: 15, v: 10 },
+                    { text: 'Colheita', size: 2.6, ch: 4, v: 8 },
+                    { text: 'Anjos', size: 2.5, ch: 4, v: 18 },
+                    { text: 'Perecer', size: 2.3, ch: 4, v: 9 },
+                    { text: 'Arrependimento', size: 2.2, ch: 22, v: 23 }
+                ]
+            },
+            {
+                id: 'bildade', name: 'Bildade', color: '#a78bfa', role: 'Amigo de Jó (Suíta)',
+                desc: 'Defende a justiça absoluta de Deus. Se Jó é justo, Deus o restaurará.',
+                image: '../imagens/BILDADE.png',
+                words: [
+                    { text: 'Justiça', size: 4.5, ch: 8, v: 3 },
+                    { text: 'Direito', size: 4, ch: 8, v: 3 },
+                    { text: 'Tradição', size: 3.8, ch: 8, v: 8 },
+                    { text: 'Perverter', size: 3.5, ch: 8, v: 3 },
+                    { text: 'Luz', size: 3.2, ch: 18, v: 5 },
+                    { text: 'Hipócrita', size: 3, ch: 8, v: 13 },
+                    { text: 'Antepassados', size: 2.8, ch: 8, v: 8 },
+                    { text: 'Trevas', size: 2.6, ch: 18, v: 18 },
+                    { text: 'Esquecimento', size: 2.4, ch: 18, v: 17 },
+                    { text: 'Ordem', size: 2.2, ch: 25, v: 2 }
+                ]
+            },
+            {
+                id: 'zofar', name: 'Zofar', color: '#fb7185', role: 'Amigo de Jó (Naamatita)',
+                desc: 'O mais severo dos amigos. Acusa Jó diretamente e insinua que ele merece pior.',
+                image: '../imagens/ZOFAR.png',
+                words: [
+                    { text: 'Pecado', size: 4.8, ch: 11, v: 6 },
+                    { text: 'Iniquidade', size: 4.3, ch: 11, v: 6 },
+                    { text: 'Ímpio', size: 4, ch: 20, v: 5 },
+                    { text: 'Castigo', size: 3.6, ch: 20, v: 29 },
+                    { text: 'Lábios', size: 3.2, ch: 11, v: 5 },
+                    { text: 'Mentira', size: 3, ch: 11, v: 3 },
+                    { text: 'Sabedoria', size: 2.8, ch: 11, v: 6 },
+                    { text: 'Profundezas', size: 2.5, ch: 11, v: 8 },
+                    { text: 'Insensato', size: 2.3, ch: 11, v: 12 },
+                    { text: 'Vergonha', size: 2, ch: 11, v: 3 }
+                ]
+            },
+            {
+                id: 'eliu', name: 'Eliú', color: '#22d3ee', role: 'Jovem Sábio',
+                desc: 'Intervém após o silêncio dos três amigos. Propõe que o sofrimento é disciplina pedagógica.',
+                image: '../imagens/ELIU.png',
+                words: [
+                    { text: 'Deus fala', size: 4.5, ch: 33, v: 14 },
+                    { text: 'Espírito', size: 4, ch: 32, v: 8 },
+                    { text: 'Disciplina', size: 3.8, ch: 33, v: 16 },
+                    { text: 'Sabedoria', size: 3.5, ch: 32, v: 7 },
+                    { text: 'Sonhos', size: 3.2, ch: 33, v: 15 },
+                    { text: 'Jovem', size: 3, ch: 32, v: 6 },
+                    { text: 'Justiça', size: 2.8, ch: 34, v: 12 },
+                    { text: 'Resgate', size: 2.6, ch: 33, v: 24 },
+                    { text: 'Mediador', size: 2.4, ch: 33, v: 23 },
+                    { text: 'Entendimento', size: 2.2, ch: 32, v: 8 },
+                    { text: 'Ira', size: 2, ch: 32, v: 2 }
+                ]
+            },
+            {
+                id: 'deus', name: 'Deus', color: '#34d399', role: 'O Todo-Poderoso',
+                desc: 'Responde a Jó do redemoinho. Revela sabedoria, poder criador e mistério inacessível.',
+                image: '../imagens/DEUS.png',
+                words: [
+                    { text: 'Onde?', size: 5, ch: 38, v: 4 },
+                    { text: 'Criação', size: 4.5, ch: 38, v: 4 },
+                    { text: 'Fundamentos', size: 4.2, ch: 38, v: 4 },
+                    { text: 'Sabedoria', size: 4, ch: 38, v: 36 },
+                    { text: 'Poder', size: 3.8, ch: 40, v: 9 },
+                    { text: 'Animais', size: 3.5, ch: 39, v: 1 },
+                    { text: 'Estrelas', size: 3.3, ch: 38, v: 7 },
+                    { text: 'Mar', size: 3, ch: 38, v: 8 },
+                    { text: 'Terra', size: 2.8, ch: 38, v: 4 },
+                    { text: 'Luz', size: 2.6, ch: 38, v: 19 },
+                    { text: 'Leviatã', size: 2.4, ch: 41, v: 1 },
+                    { text: 'Beemote', size: 2.2, ch: 40, v: 15 },
+                    { text: 'Chuva', size: 2, ch: 38, v: 28 }
+                ]
+            }
+        ];
+
+        // Render character tabs
+        const tabsContainer = document.getElementById('char-tabs');
+        characters.forEach((char, index) => {
+            const tab = document.createElement('button');
+            tab.className = 'char-tab' + (index === 0 ? ' active' : '');
+            tab.dataset.id = char.id;
+            tab.innerHTML = `<span class="char-dot" style="background: ${char.color};"></span>${char.name}`;
+            tab.addEventListener('click', () => selectCharacter(char.id));
+            tabsContainer.appendChild(tab);
+        });
+
+        const cloudContainer = document.getElementById('word-cloud');
+        const charInfo = document.getElementById('char-info');
+
+        function selectCharacter(charId) {
+            const char = characters.find(c => c.id === charId);
+            const palette = colorPalettes[charId];
+
+            // Update tabs
+            document.querySelectorAll('.char-tab').forEach(tab => {
+                tab.classList.toggle('active', tab.dataset.id === charId);
+                if (tab.dataset.id === charId) {
+                    tab.style.background = char.color;
+                } else {
+                    tab.style.background = '';
+                }
+            });
+
+            // Render word cloud with varied colors and links
+            cloudContainer.innerHTML = '';
+
+            // Sort by size descending, then shuffle a bit for visual interest
+            const shuffled = [...char.words].sort((a, b) => b.size - a.size);
+
+            shuffled.forEach((word, i) => {
+                const el = document.createElement('a');
+                el.className = 'word';
+                el.href = getBibleLink(word.ch, word.v);
+                el.target = '_blank';
+                el.textContent = word.text;
+
+                // MUCH LARGER sizes - multiplied by 1.2
+                const fontSize = word.size * 1.2;
+                el.style.fontSize = fontSize + 'rem';
+
+                // Varied colors from palette
+                const wordColor = palette[i % palette.length];
+                el.style.color = wordColor;
+                el.style.background = `${wordColor}15`;
+
+                el.style.animationDelay = (i * 0.06) + 's';
+                el.style.fontWeight = word.size > 4 ? '700' : word.size > 3 ? '600' : '500';
+
+                cloudContainer.appendChild(el);
+            });
+
+            // Update char info - use image if available, otherwise use initial
+            const avatarContent = char.image
+                ? `<div class="char-avatar" style="background-image: url('${char.image}'); background-size: cover; background-position: center; border: 3px solid ${char.color};"></div>`
+                : `<div class="char-avatar" style="background: ${char.color};">${char.name.charAt(0)}</div>`;
+
+            charInfo.innerHTML = `
+        ${avatarContent}
+        <div>
+          <div class="char-name" style="color: ${char.color};">${char.name}</div>
+          <div class="char-role">${char.role}</div>
+          <div class="char-desc">${char.desc}</div>
+          <div class="word-hint">💡 Clique em qualquer palavra acima para abrir a passagem bíblica correspondente</div>
+        </div>
+      `;
+        }
+
+        // Select first character
+        selectCharacter('jo');
+    </script>
+</body>
+
+</html>
